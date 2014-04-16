@@ -23,13 +23,12 @@
             "actions":[
                 {
                     "id":"fishing",
-                    "charges":2,
                     "requirements":[
                         {"type":"item","value":"fishing_pole"}
                     ],
                     "action":"give",
                     "config":{
-                        "amount":5,
+                        "amount":1,
                         "items":[
                             {
                                 "id":"fish",
