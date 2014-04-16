@@ -24,6 +24,13 @@ func (p *Player) Attack(target *Npc) {
 	//TODO: Add attack functionality
 }
 
+func (p *Player) Give(entry string) {
+	template, found := ItemTemplateDirectory[entry]
+	if(found) {
+		p.Inventory = append(p.Inventory,ItemFromTemplate(template))
+	}
+}
+
 func (p *Player) Heal(value int64) {
 	p.Health += value
 	if(p.Health > p.MaxHealth) {

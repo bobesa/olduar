@@ -28,6 +28,7 @@ func LoadItems(path string) bool {
 			if(err == nil) {
 				fmt.Println("\t" + file.Name() + ": loaded "+strconv.Itoa(len(items))+" items")
 				for _, item := range items {
+					item.Prepare()
 					ItemTemplateDirectory[item.Id] = item
 				}
 			} else {
@@ -128,6 +129,14 @@ type ItemTemplate struct {
 	//Stats
 	DamageMin int64			`json:"damage_min"`
 	DamageMax int64			`json:"damage_max"`
+
+	//Prepared response object
+	Response ResponseItemDetail `json:"-"`
+}
+
+func (i *ItemTemplate) Prepare() {
+	i.Response.Name = &i.Name
+	i.Response.Description = &i.Description
 }
 
 type Item struct {

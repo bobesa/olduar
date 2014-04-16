@@ -68,6 +68,18 @@ type Response struct {
 	Actions map[string]string	`json:"actions"`
 }
 
+type ResponseItem struct {
+	Id int `json:"id"`
+	Name string `json:"name"`
+	Description string `json:"desc"`
+}
+
+type ResponseItemDetail struct {
+	//All properties must be pointers as we are just reusing something from item template
+	Name *string `json:"name"`
+	Description *string `json:"desc"`
+}
+
 // Game State and functions
 
 type GameStates []*GameState
@@ -136,6 +148,23 @@ func (state *GameState) Prepare() {
 					state.GoTo(cmd.Parameter)
 				}
 				resp = state.GetPlayerResponse(cmd.Player)
+			case "inventory":
+				inventory := make([]ResponseItem,len(cmd.Player.Inventory))
+				for index, item := range cmd.Player.Inventory {
+					inventory[index] = ResponseItem{
+						Id: index+1,
+						Name: item.Attributes.Name,
+						Description: item.Attributes.Description,
+					}
+				}
+				resp, _ = json.Marshal(inventory)
+			case "inspect":
+				index, err := strconv.Atoi(cmd.Parameter)
+				if(err == nil && cmd.Parameter != "" && index > 0 && len(cmd.Player.Inventory) >= index) {
+					resp, _ = json.Marshal(cmd.Player.Inventory[index-1].Attributes.Response) //decrease index as we are increasing it in inventory command
+				} else {
+					resp = []byte("null")
+				}
 			}
 			if(resp == nil) {
 				resp = []byte("{}")
