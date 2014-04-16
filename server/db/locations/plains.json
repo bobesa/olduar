@@ -1,0 +1,54 @@
+{
+    "region":"plains",
+    "locations":[
+
+        {
+            "id":"plains_tree",
+            "name":"Tree",
+    
+            "desc":"You are standing in front of a pub waiting for adventure.",
+            "desc_short":"a tree"
+        },
+        {
+            "id":"plains_lake",
+            "name":"Lake",
+
+            "desc":"You are looking at the beautiful lake full of fish.",
+            "desc_short":"a lake",
+
+            "items":[
+                {"id":"fishing_pole"}
+            ],
+
+            "actions":[
+                {
+                    "id":"fishing",
+                    "charges":2,
+                    "requirements":[
+                        {"type":"item","value":"fishing_pole"}
+                    ],
+                    "action":"give",
+                    "config":{
+                        "amount":5,
+                        "items":[
+                            {
+                                "id":"fish",
+                                "chance":0.5,
+                                "msg_party":"%player% caught a fish!",
+                                "msg_player":"You caught a fish!"
+                            },
+                            {
+                                "id":"goldfish",
+                                "chance":0.001,
+                                "msg_party":"%player% caught a goldfish!",
+                                "msg_player":"You caught a goldfish!"
+                            }
+                        ]
+                    },
+                    "desc":"go fishing"
+                }
+            ]
+        }
+
+    ]
+}

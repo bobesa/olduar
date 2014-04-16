@@ -1,0 +1,37 @@
+[
+    {
+        "id": "fishing_pole",
+        "name": "Fishing pole",
+        "desc": "A simple fishing pole",
+        "type": "2hand",
+        "class": "staff",
+        "damage_min": 1,
+        "damage_max": 5
+    },
+    {
+        "id": "fish",
+        "name": "Fish",
+        "desc": "A small fish",
+        "type": "consumable",
+        "actions":[{
+            "action":"effect",
+            "config":{
+                "type":"heal",
+                "value": 25
+            }
+        }]
+    },
+    {
+        "id": "goldfish",
+        "name": "Goldfish",
+        "desc": "A small non-magical goldfish",
+        "type": "consumable",
+        "actions":[{
+            "action":"effect",
+            "config":{
+                "type":"heal",
+                "value": 50
+            }
+        }]
+    }
+]

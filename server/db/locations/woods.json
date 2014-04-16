@@ -1,0 +1,48 @@
+{
+    "region":"woods",
+    "locations":[
+
+        {
+            "id":"woods_big_tree",
+            "name":"Tree",
+
+            "desc":"You are standing in front of a massive tree cutting trough sky.",
+            "desc_short":"a big tree",
+
+            "actions":[
+                {
+                    "id":"hug",
+                    "action":"message",
+                    "config":{
+                        "msg_party":"%player% hugged a tree",
+                        "msg_player":"You hugged a tree"
+                    },
+                    "desc":"hug a tree"
+                }
+            ]
+        },
+
+        {
+            "id":"woods_shrine",
+            "name":"Shrine",
+
+            "desc":"You found a magical shrine. In the center you see a fountain full of sparkling water.",
+            "desc_short":"a shrine",
+
+            "actions":[
+                {
+                    "id":"drink",
+                    "action": "effect",
+                    "config": {
+                        "type": "heal",
+                        "value": 50,
+                        "msg_party": "%player% drank the water from fountain",
+                        "msg_player": "You drank the water from fountain"
+                    },
+                    "desc":"drink the water"
+                }
+            ]
+        }
+
+    ]
+}

@@ -1,0 +1,18 @@
+{
+    "region":"start",
+    "desc":"Starting locations - One is chosen as a first location of the journey",
+    "locations":[
+        {
+            "id":"start_pub",
+            "name":"Pub",
+
+            "desc":"You are standing in front of a pub waiting for adventure.",
+            "desc_short":"a pub",
+
+            "exits":[
+                {"id":"woods","region":"woods"},
+                {"id":"plains","region":"plains"}
+            ]
+        }
+    ]
+}
