@@ -39,9 +39,9 @@ func LoadLocations(path string) bool {
 				for _, location := range region.Locations {
 					location.Region = region.Region
 					//Set action charges to unlimited for 0 value
-					for _, action := range location.Actions {
+					for index, action := range location.Actions {
 						if(action.Charges == 0) {
-							action.Charges = -1 //-1 = unlimited
+							location.Actions[index].Charges = -1 //-1 = unlimited
 						}
 					}
 					//Add location as entry

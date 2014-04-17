@@ -66,20 +66,24 @@ func GetItemsFromLootTable(player *Player, amount int, table ItemLootTable) []*I
 	//Prepare selection of loot pointers
 	minChance := 1.0
 	for _, item := range table {
-		if(item.Chance < minChance) {
+		if(item.Chance < minChance && item.Chance != 0.0) {
 			minChance = item.Chance
 		}
 	}
 	selectionAmount, s := 0, 0
 	for _, item := range table {
-		selectionAmount += (int)(item.Chance/minChance)
+		if(item.Chance != 0.0) {
+			selectionAmount += (int)(item.Chance/minChance)
+		}
 	}
 	selection, shuffledSelection := make(ItemLootTable,selectionAmount), make(ItemLootTable,selectionAmount)
 	for _, item := range table {
-		cnt := (int)(item.Chance/minChance)
-		for i:=0;i<cnt;i++ {
-			selection[s] = item
-			s++
+		if(item.Chance != 0.0) {
+			cnt := (int)(item.Chance / minChance)
+			for i := 0; i < cnt; i++ {
+				selection[s] = item
+				s++
+			}
 		}
 	}
 
