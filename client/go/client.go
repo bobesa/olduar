@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"strconv"
 	"strings"
+	"os"
+	"time"
 )
 
 const (
@@ -32,6 +34,8 @@ const (
 	COLOR_BG_CYAN = 46
 	COLOR_BG_GREY = 47
 )
+
+var Username, Password string = "", ""
 
 // Types
 
@@ -87,7 +91,7 @@ func (state *State) Print() {
 		for _, event := range state.History {
 			fmt.Println(event.Message)
 		}
-		fmt.Println("----------------------------------------")
+		PrintLine()
 	}
 
 	//Location info
@@ -158,17 +162,55 @@ func (state *State) Print() {
 	}
 }
 
+func RequireAuth() {
+	fmt.Println(formatBoldColor("Wrong Username or Password",COLOR_RED))
+	Username, Password = "", ""
+	for(Username == "") {
+		fmt.Print(formatBold("Enter Username:")+" \033[32m")
+		fmt.Scanln(&Username)
+		fmt.Print("\033[0m")
+	}
+	for(Password == "") {
+		fmt.Print(formatBold("Enter Password:")+" \033[32m")
+		fmt.Scanln(&Password)
+		fmt.Print("\033[0m")
+	}
+	PrintLine()
+}
+
 func Fetch(command string, param string) []byte {
+	//Check for param
 	if(param != "") {
 		command = command +"/"
 	}
-	resp, err := http.Get(SERVER+"/"+GAME+"/"+command+param)
+
+	//Do the request
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", SERVER+"/"+GAME+"/"+command+param, nil)
+	req.SetBasicAuth(Username, Password)
+	resp, err := client.Do(req)
+	if(err != nil) {
+		fmt.Println(formatBoldColor("Network issue: Retrying in 5 seconds",COLOR_RED))
+		time.Sleep(time.Second*5)
+		return Fetch(command,param)
+	}
+
+	if(resp.StatusCode == 404) {
+		RequireAuth()
+		return Fetch(command,param)
+	}
+
+	//Read body
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if(err != nil) {
 		return nil
 	}
 	return body
+}
+
+func PrintLine() {
+	fmt.Println("----------------------------------------")
 }
 
 func PrintHelp() {
@@ -185,7 +227,7 @@ func PrintHelp() {
 }
 
 func Process(command string, param string) {
-	fmt.Println("----------------------------------------")
+	PrintLine()
 	switch(command){
 	case "inventory":
 		inventory := Inventory{}
@@ -218,7 +260,11 @@ func Process(command string, param string) {
 	case "do", "go", "look":
 		var state *State = nil
 		json.Unmarshal(Fetch(command,param),&state)
-		state.Print()
+		if(state != nil) {
+			state.Print()
+		} else {
+			fmt.Println(formatBold("Something went wrong"))
+		}
 
 	case "help":
 		fmt.Println(formatBold("Available commands"))
@@ -255,6 +301,12 @@ func formatColor(str string, color int) string {
 //Main
 func main() {
 	fmt.Println("\033[0m"+formatBold("OLDUAR Client "+VERSION+"\n"))
+
+	if(len(os.Args) >= 3) {
+		//User + pass provided in command line arguments
+		Username = os.Args[1]
+		Password = os.Args[2]
+	}
 
 	Process("look","")
 	for {
