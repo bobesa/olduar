@@ -179,7 +179,7 @@ func (state *GameState) Prepare() {
 		}
 	}()
 
-	fmt.Println("Game room \""+state.Id+"\" is ready.")
+	fmt.Println("Game room \""+state.Id+"\" is ready")
 }
 
 func (state *GameState) AddMessage(message *MessageObject) {

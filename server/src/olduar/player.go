@@ -26,8 +26,18 @@ func (p *Player) Attack(target *Npc) {
 func (p *Player) Pickup(entry string) bool {
 	item := p.GameState.CurrentLocation.Items.Get(entry)
 	if(item != nil) {
-		p.GameState.CurrentLocation.Items.Remove(item)
-		p.Inventory.Add(item)
+		var weight float64 = item.Attributes.Weight
+		for _, invItem := range p.Inventory {
+			weight += invItem.Attributes.Weight
+		}
+		if(weight <= 1.0) {
+			p.GameState.CurrentLocation.Items.Remove(item)
+			p.Inventory.Add(item)
+			p.GameState.Tell("You picked up "+item.Attributes.Name+" from ground",p)
+			p.GameState.TellAllExcept(p.Name+" picked up "+item.Attributes.Name+" from ground",p)
+		} else {
+			p.GameState.Tell("You cannot keep more items in inventory",p)
+		}
 		return true
 	}
 	return false

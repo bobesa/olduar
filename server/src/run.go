@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	olduar.Run("./db/")
+	olduar.Run("./config.json")
 }

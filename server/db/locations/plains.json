@@ -23,13 +23,27 @@
             "actions":[
                 {
                     "id":"fishing",
+                    "charges":1,
+                    "charges_msg":"Lake is empty",
                     "requirements":[
-                        {"type":"item","value":"fishing_pole"}
+                        {"type":"item","value":"fishing_pole","error_msg":"You cannot fish without fishing pole"}
                     ],
                     "action":"give",
                     "config":{
                         "amount":1,
                         "items":[
+                            {
+                                "id":"",
+                                "chance":0.85,
+                                "msg_party":"%player% tried fishing but came empty handed!",
+                                "msg_player":"You failed to catch anything!"
+                            },
+                            {
+                                "id":"useless_shoe",
+                                "chance":0.1,
+                                "msg_party":"%player% caught a useless shoe!",
+                                "msg_player":"You caught a useless shoe!"
+                            },
                             {
                                 "id":"fish",
                                 "chance":0.5,

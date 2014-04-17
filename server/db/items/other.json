@@ -6,7 +6,19 @@
         "type": "2hand",
         "class": "staff",
         "damage_min": 1,
-        "damage_max": 5
+        "damage_max": 5,
+        "actions":[{
+            "action":"location",
+            "config":{
+                "type": "use",
+                "value": "fishing"
+            }
+        }]
+    },
+    {
+        "id": "useless_shoe",
+        "name": "Useless shoe",
+        "desc": "Shoe full of holes that is completely useless"
     },
     {
         "id": "fish",
@@ -17,7 +29,8 @@
             "action":"effect",
             "config":{
                 "type":"heal",
-                "value": 25
+                "value": 25,
+                "msg_player": "You were healed for %value%"
             }
         }]
     },
