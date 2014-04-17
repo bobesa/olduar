@@ -106,10 +106,20 @@ func (template *ItemTemplate) GenerateItem() *Item {
 	if(template == nil) {
 		return nil
 	}
+
+	//Set action charges to unlimited for 0 value
+	actions := template.Actions
+	for index, action := range actions {
+		if(action.Charges == 0) {
+			actions[index].Charges = -1 //-1 = unlimited
+		}
+	}
+
 	return &Item{
 		Id: template.Id,
 		Equipped: false,
 		Attributes: template,
+		Actions: actions,
 	}
 }
 
@@ -132,6 +142,7 @@ type ItemTemplate struct {
 	Description string		`json:"desc"`
 	Type string				`json:"type"`
 	Weight float64			`json:"weight"`
+	Actions Actions			`json:"actions,omitempty"`
 
 	//Stats
 	DamageMin int64			`json:"damage_min"`
@@ -149,6 +160,7 @@ func (i *ItemTemplate) Prepare() {
 type Item struct {
 	Id string						`json:"id"`
 	Attributes *ItemTemplate		`json:"-"`
+	Actions Actions					`json:"actions,omitempty"`
 	Equipped bool					`json:"equipped"`
 }
 
@@ -157,5 +169,11 @@ func (item *Item) GenerateResponse() ResponseItem {
 		Id: &item.Id,
 		Name: &item.Attributes.Name,
 		Description: &item.Attributes.Description,
+	}
+}
+
+func (item *Item) Use(player *Player) {
+	for index, _ := range item.Attributes.Actions {
+		player.GameState.DoAction(player,&item.Attributes.Actions[index])
 	}
 }

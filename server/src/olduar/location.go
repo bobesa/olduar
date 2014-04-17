@@ -48,6 +48,14 @@ type Location struct {
 	Visited bool					`json:"visited"`
 }
 
+func (loc *Location) DoAction(state *GameState, player *Player, actionName string) {
+	for index, action := range loc.Actions {
+		if(action.Id == actionName) {
+			state.DoAction(player,&loc.Actions[index])
+		}
+	}
+}
+
 func (loc *Location) Describe() {
 	fmt.Println("----------------------------")
 	fmt.Println(loc.Name)

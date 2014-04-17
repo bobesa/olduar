@@ -140,7 +140,7 @@ func (state *GameState) Prepare() {
 				resp = state.GetPlayerResponse(cmd.Player)
 			case "do":
 				if(cmd.Parameter != "") {
-					state.DoAction(cmd.Player,cmd.Parameter)
+					state.CurrentLocation.DoAction(state,cmd.Player,cmd.Parameter)
 				}
 				resp = state.GetPlayerResponse(cmd.Player)
 			case "go":
@@ -158,24 +158,22 @@ func (state *GameState) Prepare() {
 				item := cmd.Player.Inventory.Get(cmd.Parameter)
 				if(item != nil) {
 					resp, _ = json.Marshal(item.Attributes.Response) //decrease index as we are increasing it in inventory command
-				} else {
-					resp = []byte("null")
 				}
 			case "pickup":
 				if(cmd.Parameter != "" && cmd.Player.Pickup(cmd.Parameter)) {
 					resp = state.GetPlayerResponse(cmd.Player)
-				} else {
-					resp = []byte("null")
 				}
 			case "drop":
 				if(cmd.Player.Drop(cmd.Parameter)) {
 					resp = state.GetPlayerResponse(cmd.Player)
-				} else {
-					resp = []byte("null")
+				}
+			case "use":
+				if(cmd.Player.Use(cmd.Parameter)) {
+					resp = state.GetPlayerResponse(cmd.Player)
 				}
 			}
 			if(resp == nil) {
-				resp = []byte("{}")
+				resp = []byte("null")
 			}
 			cmd.Response <- resp
 		}
@@ -247,51 +245,46 @@ func (state *GameState) GetPlayerResponse(player *Player) []byte {
 	return data
 }
 
-func (state *GameState) DoAction(player *Player, actionName string) {
-	for index, action := range state.CurrentLocation.Actions {
-		if(action.Id == actionName) {
-
-			//Check for requirements
-			if(len(action.Requirements)>0 && (action.Charges == -1 || action.Charges > 0)) {
-				for _, requirement := range action.Requirements {
-					switch(requirement.Type){
-					case "item":
-						if(!player.Owns(requirement.Value)) {
-							if(requirement.ErrorMessage != "") {
-								state.Tell(requirement.ErrorMessage,player)
-							}
-							return
-						}
+func (state *GameState) DoAction(player *Player, action *Action) {
+	//Check for requirements
+	if(len(action.Requirements)>0 && (action.Charges == -1 || action.Charges > 0)) {
+		for _, requirement := range action.Requirements {
+			switch(requirement.Type){
+			case "item":
+				if(!player.Owns(requirement.Value)) {
+					if(requirement.ErrorMessage != "") {
+						state.Tell(requirement.ErrorMessage,player)
 					}
+					return
 				}
-			}
-
-			//Charges
-			if(action.Charges > -1) {
-				if(action.Charges > 0) {
-					state.CurrentLocation.Actions[index].Charges--;
-				} else {
-					return //No charges left = no loot
-				}
-			}
-
-			//Do actual action
-			action.Do(state,player)
-
-			//Messages
-			message, found := action.Config["msg_player"]
-			if(found) {
-				state.Tell(AppendVariablesToString(message.(string),player),player)
-			}
-			message, found = action.Config["msg_party"]
-			if(found) {
-				state.TellAllExcept(AppendVariablesToString(message.(string),player),player)
-			}
-			message, found = action.Config["msg"]
-			if(found) {
-				state.TellAll(AppendVariablesToString(message.(string),player))
 			}
 		}
+	}
+
+	//Charges
+	if(action.Charges > -1) {
+		if(action.Charges > 0) {
+			action.Charges--;
+		} else {
+			return //No charges left = no loot
+		}
+	}
+
+	//Do actual action
+	action.Do(state,player)
+
+	//Messages
+	message, found := action.Config["msg_player"]
+	if(found) {
+		state.Tell(AppendVariablesToString(message.(string),player,action.Config),player)
+	}
+	message, found = action.Config["msg_party"]
+	if(found) {
+		state.TellAllExcept(AppendVariablesToString(message.(string),player,action.Config),player)
+	}
+	message, found = action.Config["msg"]
+	if(found) {
+		state.TellAll(AppendVariablesToString(message.(string),player,action.Config))
 	}
 }
 

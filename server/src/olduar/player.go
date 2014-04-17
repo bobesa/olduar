@@ -33,6 +33,18 @@ func (p *Player) Pickup(entry string) bool {
 	return false
 }
 
+func (p *Player) Use(entry string) bool {
+	item := p.Inventory.Get(entry)
+	if(item != nil) {
+		item.Use(p)
+		if(item.Attributes.Type == "consumable") {
+			p.Inventory.Remove(item)
+		}
+		return true
+	}
+	return false
+}
+
 func (p *Player) Drop(entry string) bool {
 	item := p.Inventory.Get(entry)
 	if(item != nil) {
