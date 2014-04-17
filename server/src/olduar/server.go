@@ -63,9 +63,13 @@ func Run(configFilename string) {
 
 		//TODO: Remove this (testing)
 		//Prepare test player & game
-		player := &Player{Name:"Test",Username:"test",HashPass:"test"}
+		player := &Player{Name:"Test",Username:"test",Password:"test2"}
+		player.Activate()
+		player2 := &Player{Name:"Test 2",Username:"test2",Password:"test"}
+		player2.Activate()
 		game := CreateGameStateFromName("test")
 		game.Join(player)
+		game.Join(player2)
 
 		//Start server
 		MainServerInstance.ListenAndServe()

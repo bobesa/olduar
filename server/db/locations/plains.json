@@ -23,7 +23,7 @@
             "actions":[
                 {
                     "id":"fishing",
-                    "charges":1,
+                    "charges":20,
                     "charges_msg":"Lake is empty",
                     "requirements":[
                         {"type":"item","value":"fishing_pole","error_msg":"You cannot fish without fishing pole"}

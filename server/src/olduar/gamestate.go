@@ -100,15 +100,17 @@ func (state *GameState) Prepare() {
 	apiPath := "/"+state.Id+"/"
 	apiPathLen := len(apiPath)
 	MainServerMux.HandleFunc(apiPath, func(w http.ResponseWriter, r *http.Request){
-			//TODO: Proper handling of authentication
+			//Authentication
+			authToken, found := r.Header["Authorization"]
+			if(!found) {
+				http.NotFound(w,r)
+				return
+			}
 
 			//Search for player in state
-			var player *Player = nil
-			for _, p := range state.Players {
-				//if(p.Username ==)
-				player = p
-			}
-			if(player == nil) {
+			player, active := ActivePlayers[authToken[0]]
+			if(!active) {
+				http.NotFound(w,r)
 				return
 			}
 
@@ -219,7 +221,7 @@ func (state *GameState) GetPlayerResponse(player *Player) []byte {
 
 	//Append history
 	for _, entry := range state.History {
-		if(entry.Id > from && (entry.IgnoredPlayer != player || entry.OnlyForPlayer == player)) {
+		if(entry.Id > from && ((entry.IgnoredPlayer == nil && entry.OnlyForPlayer == nil) || (entry.IgnoredPlayer != player && entry.OnlyForPlayer == nil) || (entry.IgnoredPlayer == nil && entry.OnlyForPlayer == player))) {
 			res.History = append(res.History,entry)
 			player.LastResponseId = entry.Id
 		}

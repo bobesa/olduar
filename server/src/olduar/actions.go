@@ -61,12 +61,12 @@ func InitializeActions() {
 
 				value, found = config["msg_party"]
 				if (found) {
-					item.MessageParty = value.(string)
+					item.MessageParty = AppendVariablesToString(value.(string),player,config)
 				}
 
 				value, found = config["msg_player"]
 				if (found) {
-					item.MessagePlayer = value.(string)
+					item.MessagePlayer = AppendVariablesToString(value.(string),player,config)
 				}
 
 				table = append(table, item)

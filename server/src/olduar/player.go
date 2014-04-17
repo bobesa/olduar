@@ -1,10 +1,18 @@
 package olduar
 
+import (
+	"encoding/base64"
+	"time"
+)
+
+var ActivePlayers map[string]*Player = make(map[string]*Player)
+
 type Players []*Player
 
 type Player struct {
 	Username string			`json:"username"`
-	HashPass string			`json:"hash"`
+	Password string			`json:"password"`
+	AuthToken string		`json:"-"`
 
 	Name string 			`json:"name"`
 	Health int64 			`json:"health"`
@@ -13,6 +21,16 @@ type Player struct {
 
 	GameState *GameState 	`json:"-"`
 	LastResponseId int64	`json:"-"`
+	LastResponse time.Time	`json:"-"`
+}
+
+func (p *Player) Activate() {
+	p.AuthToken = "Basic "+base64.StdEncoding.EncodeToString([]byte(p.Username+":"+p.Password))
+	ActivePlayers[p.AuthToken] = p
+}
+
+func (p *Player) Deactivate() {
+
 }
 
 func (p *Player) Ability(target *Npc, skill string) {
