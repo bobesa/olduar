@@ -66,7 +66,7 @@ type ItemDetail struct {
 func (item *ItemDetail) Print() {
 	if(item != nil) {
 		fmt.Println(formatBold(item.Name))
-		fmt.Println(formatColor(item.Description,COLOR_PURPLE))
+		fmt.Println(formatInfo(item.Description))
 	} else {
 		fmt.Println(formatBold("You don't own this item"))
 	}
@@ -92,7 +92,7 @@ func (state *State) Print() {
 
 	//Location info
 	fmt.Println(formatBold(state.Name))
-	fmt.Println(formatColor(state.Description,COLOR_PURPLE))
+	fmt.Println(formatInfo(state.Description))
 
 	//Items
 	count := len(state.Items)
@@ -172,15 +172,15 @@ func Fetch(command string, param string) []byte {
 }
 
 func PrintHelp() {
-	fmt.Println("\thelp \t\t\t\t List of available commands")
-	fmt.Println("\tlook \t\t\t\t See current location description etc.")
-	fmt.Println("\tgo [direction] \t\t Walk to a new place (example: go west)")
-	fmt.Println("\tdo [task] \t\t\t Do action (example: do drink)")
-	fmt.Println("\tinventory \t\t\t See your inventory")
-	fmt.Println("\tpickup [item] \t\t Pickup object on ground (example: pickup shield)")
-	fmt.Println("\tdrop [item] \t\t Drop object from inventory on ground (example: drop axe)")
+	fmt.Println("\t"+formatCommand("help")+" \t\t\t\t List of available commands")
+	fmt.Println("\t"+formatCommand("look")+" \t\t\t\t See current location description etc.")
+	fmt.Println("\t"+formatCommand("go")+" [direction] \t\t Walk to a new place (example: "+formatInfo("go west")+")")
+	fmt.Println("\t"+formatCommand("do")+" [task] \t\t\t Do action (example: "+formatInfo("do drink")+")")
+	fmt.Println("\t"+formatCommand("inventory")+" \t\t\t See your inventory")
+	fmt.Println("\t"+formatCommand("pickup")+" [item] \t\t Pickup object on ground (example: "+formatInfo("pickup shield")+")")
+	fmt.Println("\t"+formatCommand("drop")+" [item] \t\t Drop object from inventory on ground (example: "+formatInfo("drop axe")+")")
 	//fmt.Println("\tequip [item] \t\t Equip item from inventory (example: equip sword)")
-	fmt.Println("\tinspect [item] \t\t Displays complete info about item (example: inspect fishing_pole)")
+	fmt.Println("\t"+formatCommand("inspect")+" [item] \t\t Displays complete info about item (example: "+formatInfo("inspect fishing_pole")+")")
 	//fmt.Println("\tsay [message] \t\t Send message to party (example: say Hello guys)")
 }
 
@@ -197,7 +197,7 @@ func Process(command string, param string) {
 		json.Unmarshal(Fetch(command,param),&item)
 		item.Print()
 
-	case "pickup", "drop":
+	case "pickup", "drop", "use":
 		if(param != "") {
 			var state *State = nil
 			json.Unmarshal(Fetch(command,param),&state)
@@ -205,10 +205,10 @@ func Process(command string, param string) {
 				state.Print()
 			} else {
 				fmt.Print(formatBold("You cannot " + command + " ") + formatCommand(param))
-				if(command == "drop") {
-					fmt.Println(formatBold(" because it's not in your inventory"))
-				} else {
+				if(command == "pickup") {
 					fmt.Println(formatBold(" because it's not here"))
+				} else {
+					fmt.Println(formatBold(" because it's not in your inventory"))
 				}
 			}
 		} else {
@@ -221,10 +221,10 @@ func Process(command string, param string) {
 		state.Print()
 
 	case "help":
-		fmt.Println("Available commands")
+		fmt.Println(formatBold("Available commands"))
 		PrintHelp()
 	default:
-		fmt.Println("Unknown command "+command+", see available commands below")
+		fmt.Println(formatBold("Unknown command ")+formatCommand(command)+formatBold(", see available commands below"))
 		PrintHelp()
 	}
 }
@@ -236,6 +236,10 @@ func formatBold(str string) string {
 
 func formatCommand(action string) string {
 	return formatBoldColor(action,COLOR_BLUE)
+}
+
+func formatInfo(info string) string {
+	return formatColor(info,COLOR_PURPLE)
 }
 
 func formatBoldColor(str string, color int) string {
