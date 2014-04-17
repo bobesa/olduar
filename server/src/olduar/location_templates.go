@@ -83,6 +83,20 @@ func CreateLocationFromTemplate(template *LocationTemplate) *Location {
 	loc.Region = template.Region
 	loc.Visited = false
 
+	//Generate items on ground
+	loc.Items = make(Inventory,0)
+	for _, item := range template.Items {
+		if(item.Id != "") {
+			finalItem := ItemTemplateDirectory[item.Id].GenerateItem()
+			if(finalItem != nil) {
+				loc.Items = append(loc.Items,finalItem)
+			}
+		} else if(item.Group != "") {
+			//Give any template from item group
+		}
+		//TODO: Handle chance
+	}
+
 	return &loc
 }
 
@@ -108,6 +122,13 @@ func CreateLocationFromEntry(entry string) *Location {
 var LocationTemplateDirectoryEntries = make(map[string]*LocationTemplate)
 var LocationTemplateDirectoryRegions = make(map[string]LocationTemplates)
 
+type LocationItemTemplates []*LocationItemTemplate
+type LocationItemTemplate struct {
+	Id string 		`json:"id"`
+	Group string 	`json:"group"`
+	Chance float64	`json:"chance"`
+}
+
 type LocationTemplates []*LocationTemplate
 type LocationTemplate struct {
 	Id string 					`json:"id"`
@@ -117,5 +138,6 @@ type LocationTemplate struct {
 	DescriptionShort string 	`json:"desc_short"`
 	Actions Actions				`json:"actions,omitempty"`
 	Exits LocationExits			`json:"exits,omitempty"`
+	Items LocationItemTemplates `json:"items"`
 }
 

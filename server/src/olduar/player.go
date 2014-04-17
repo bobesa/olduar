@@ -1,6 +1,5 @@
 package olduar
 
-type Inventory []*Item
 type Players []*Player
 
 type Player struct {
@@ -24,28 +23,34 @@ func (p *Player) Attack(target *Npc) {
 	//TODO: Add attack functionality
 }
 
-func (p *Player) Get(entry string) *Item {
-	for _, item := range p.Inventory {
-		if(item.Id == entry) {
-			return item
-		}
+func (p *Player) Pickup(entry string) bool {
+	item := p.GameState.CurrentLocation.Items.Get(entry)
+	if(item != nil) {
+		p.GameState.CurrentLocation.Items.Remove(item)
+		p.Inventory.Add(item)
+		return true
 	}
-	return nil
+	return false
+}
+
+func (p *Player) Drop(entry string) bool {
+	item := p.Inventory.Get(entry)
+	if(item != nil) {
+		p.GameState.CurrentLocation.Items.Add(item)
+		p.Inventory.Remove(item)
+		return true
+	}
+	return false
 }
 
 func (p *Player) Owns(entry string) bool {
-	for _, item := range p.Inventory {
-		if(item.Id == entry) {
-			return true
-		}
-	}
-	return false
+	return p.Inventory.Get(entry) != nil
 }
 
 func (p *Player) Give(entry string) {
 	template, found := ItemTemplateDirectory[entry]
 	if(found) {
-		p.Inventory = append(p.Inventory,template.GenerateItem())
+		p.Inventory.Add(template.GenerateItem())
 	}
 }
 

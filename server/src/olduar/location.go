@@ -44,6 +44,7 @@ type Location struct {
 	DescriptionShort string 		`json:"desc_short"`
 	Exits LocationExits 			`json:"exits"`
 	Actions Actions					`json:"actions,omitempty"`
+	Items Inventory					`json:"items,omitempty"`
 	Visited bool					`json:"visited"`
 }
 

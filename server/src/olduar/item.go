@@ -103,6 +103,9 @@ func GetItemsFromLootTable(amount int, table ItemLootTable) ItemLootTable {
 }
 
 func (template *ItemTemplate) GenerateItem() *Item {
+	if(template == nil) {
+		return nil
+	}
 	return &Item{
 		Id: template.Id,
 		Equipped: false,
@@ -147,4 +150,12 @@ type Item struct {
 	Id string						`json:"id"`
 	Attributes *ItemTemplate		`json:"-"`
 	Equipped bool					`json:"equipped"`
+}
+
+func (item *Item) GenerateResponse() ResponseItem {
+	return ResponseItem{
+		Id: &item.Id,
+		Name: &item.Attributes.Name,
+		Description: &item.Attributes.Description,
+	}
 }

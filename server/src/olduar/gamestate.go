@@ -66,6 +66,7 @@ type Response struct {
 	History MessageObjects 		`json:"history"`
 	Exits map[string]string		`json:"exits"`
 	Actions map[string]string	`json:"actions"`
+	Items []ResponseItem		`json:"items,omitempty"`
 }
 
 type ResponseItem struct {
@@ -121,6 +122,7 @@ func (state *GameState) Prepare() {
 				}
 				state.queue <- &command
 				data := <- resp
+				w.Header().Set("Content-Type", "application/json")
 				w.Write(data)
 			}
 		})
@@ -149,17 +151,25 @@ func (state *GameState) Prepare() {
 			case "inventory":
 				inventory := make([]ResponseItem,len(cmd.Player.Inventory))
 				for index, item := range cmd.Player.Inventory {
-					inventory[index] = ResponseItem{
-						Id: &item.Id,
-						Name: &item.Attributes.Name,
-						Description: &item.Attributes.Description,
-					}
+					inventory[index] = item.GenerateResponse()
 				}
 				resp, _ = json.Marshal(inventory)
 			case "inspect":
-				item := cmd.Player.Get(cmd.Parameter)
+				item := cmd.Player.Inventory.Get(cmd.Parameter)
 				if(item != nil) {
 					resp, _ = json.Marshal(item.Attributes.Response) //decrease index as we are increasing it in inventory command
+				} else {
+					resp = []byte("null")
+				}
+			case "pickup":
+				if(cmd.Parameter != "" && cmd.Player.Pickup(cmd.Parameter)) {
+					resp = state.GetPlayerResponse(cmd.Player)
+				} else {
+					resp = []byte("null")
+				}
+			case "drop":
+				if(cmd.Player.Drop(cmd.Parameter)) {
+					resp = state.GetPlayerResponse(cmd.Player)
 				} else {
 					resp = []byte("null")
 				}
@@ -201,6 +211,12 @@ func (state *GameState) GetPlayerResponse(player *Player) []byte {
 		History: make(MessageObjects,0),
 		Exits: make(map[string]string),
 		Actions: make(map[string]string),
+		Items: make([]ResponseItem,len(state.CurrentLocation.Items)),
+	}
+
+	//Append items
+	for index, item := range state.CurrentLocation.Items {
+		res.Items[index] = item.GenerateResponse()
 	}
 
 	//Append history
