@@ -46,19 +46,19 @@ func LoadItems(path string) bool {
 
 // Loot definition
 
-func GetItemsFromLootTable(player *Player, amount int, table ItemLootTable) []*Item {
+func GetItemsFromLootTable(amount int, table ItemLootTable) ItemLootTable {
 	//Loot table has no items or amount = 0? return none
 	if(len(table) == 0 || amount == 0) {
 		return nil
 	}
 
 	//Prepare loot bag
-	loot := make([]*Item,amount)
+	loot := make(ItemLootTable,amount)
 
 	//Loot table has only 1 item? Return that item @amount times
 	if(len(table) == 1) {
 		for i:=0; i<amount; i++ {
-			loot[i] = ItemFromTemplate(table[0].Template)
+			loot[i] = table[0]
 		}
 		return loot
 	}
@@ -95,14 +95,14 @@ func GetItemsFromLootTable(player *Player, amount int, table ItemLootTable) []*I
 
 	//Pick items
 	for i:=0;i<amount;i++ {
-		loot[i] = ItemFromTemplate(shuffledSelection[rand.Intn(selectionAmount)].Template)
+		loot[i] = shuffledSelection[rand.Intn(selectionAmount)]
 	}
 
 	//Return looted items
 	return loot
 }
 
-func ItemFromTemplate(template *ItemTemplate) *Item {
+func (template *ItemTemplate) GenerateItem() *Item {
 	return &Item{
 		Id: template.Id,
 		Equipped: false,

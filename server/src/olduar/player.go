@@ -24,6 +24,15 @@ func (p *Player) Attack(target *Npc) {
 	//TODO: Add attack functionality
 }
 
+func (p *Player) Get(entry string) *Item {
+	for _, item := range p.Inventory {
+		if(item.Id == entry) {
+			return item
+		}
+	}
+	return nil
+}
+
 func (p *Player) Owns(entry string) bool {
 	for _, item := range p.Inventory {
 		if(item.Id == entry) {
@@ -36,7 +45,7 @@ func (p *Player) Owns(entry string) bool {
 func (p *Player) Give(entry string) {
 	template, found := ItemTemplateDirectory[entry]
 	if(found) {
-		p.Inventory = append(p.Inventory,ItemFromTemplate(template))
+		p.Inventory = append(p.Inventory,template.GenerateItem())
 	}
 }
 

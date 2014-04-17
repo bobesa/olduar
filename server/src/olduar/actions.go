@@ -56,9 +56,17 @@ var ActionsDirectory = map[string]ActionFunction {
 		}
 
 		//Get looted items
-		items := GetItemsFromLootTable(player,amount,table)
+		items := GetItemsFromLootTable(amount,table)
 		for _, item := range items {
-			player.Inventory = append(player.Inventory,item)
+			if(item.MessagePlayer != "") {
+				state.Tell(item.MessagePlayer,player)
+			}
+			if(item.MessageParty != "") {
+				state.TellAllExcept(item.MessageParty,player)
+			}
+			if(item.Template != nil) {
+				player.Inventory = append(player.Inventory,item.Template.GenerateItem())
+			}
 		}
 	},
 
