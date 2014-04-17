@@ -12,6 +12,14 @@ type Action struct {
 	Action string						`json:"action"`
 	Charges int							`json:"charges"`
 	Config map[string]interface{}		`json:"config,omitempty"`
+	Requirements ActionRequirements		`json:"requirements"`
+}
+
+type ActionRequirements []*ActionRequirement
+type ActionRequirement struct {
+	Type string 				`json:"type"`
+	Value string 				`json:"value"`
+	ErrorMessage string 		`json:"error_msg"`
 }
 
 func (action *Action) Do(state *GameState, player *Player) {

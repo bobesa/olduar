@@ -91,8 +91,7 @@ type GameState struct {
 	History MessageObjects		`json:"-"`
 	LastMessageId int64			`json:"message_count"`
 
-	queueCommands chan *Command
-	queueMessages chan *MessageObject
+	queue chan *Command
 }
 
 func (state *GameState) Prepare() {
@@ -120,20 +119,19 @@ func (state *GameState) Prepare() {
 				if(len(params)>1) {
 					command.Parameter = strings.ToLower(params[1])
 				}
-				state.queueCommands <- &command
+				state.queue <- &command
 				data := <- resp
 				w.Write(data)
 			}
 		})
 
 	//Prepare channels
-	state.queueCommands = make(chan *Command,0)
-	state.queueMessages = make(chan *MessageObject,0)
+	state.queue = make(chan *Command,0)
 
 	//Message worker
 	go func(){
 		for {
-			cmd := <- state.queueCommands
+			cmd := <- state.queue
 			var resp []byte = nil
 			switch(cmd.Command) {
 			case "look":
@@ -187,11 +185,11 @@ func (state *GameState) TellAll(str string) {
 }
 
 func (state *GameState) TellAllExcept(str string, player *Player) {
-	state.queueMessages <- &MessageObject{Message:str,IgnoredPlayer:player}
+	state.AddMessage(&MessageObject{Message:str,IgnoredPlayer:player})
 }
 
 func (state *GameState) Tell(str string, player *Player) {
-	state.queueMessages <- &MessageObject{Message:str,OnlyForPlayer:player}
+	state.AddMessage(&MessageObject{Message:str,OnlyForPlayer:player})
 }
 
 func (state *GameState) GetPlayerResponse(player *Player) []byte {
@@ -237,17 +235,29 @@ func (state *GameState) DoAction(player *Player, actionName string) {
 	for index, action := range state.CurrentLocation.Actions {
 		if(action.Id == actionName) {
 
+			//Check for requirements
+			if(len(action.Requirements)>0 && (action.Charges == -1 || action.Charges > 0)) {
+				for _, requirement := range action.Requirements {
+					switch(requirement.Type){
+					case "item":
+						if(!player.Owns(requirement.Value)) {
+							if(requirement.ErrorMessage != "") {
+								state.Tell(requirement.ErrorMessage,player)
+							}
+							return
+						}
+					}
+				}
+			}
+
 			//Charges
 			if(action.Charges > -1) {
 				if(action.Charges > 0) {
 					state.CurrentLocation.Actions[index].Charges--;
 				} else {
-					//No charges left = no loot
-					return
+					return //No charges left = no loot
 				}
 			}
-
-			//TODO: Check for requirements
 
 			//Do actual action
 			action.Do(state,player)
