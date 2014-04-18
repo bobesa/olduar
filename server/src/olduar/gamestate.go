@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strings"
 	"fmt"
+	"math/rand"
+	"time"
 )
 
 // Create Game State from save / scratch
@@ -93,9 +95,16 @@ type GameState struct {
 	LastMessageId int64			`json:"message_count"`
 
 	queue chan *Command
+	voting bool
+	votingTime time.Time
 }
 
 func (state *GameState) Prepare() {
+
+	//Prepare variables
+	state.queue = make(chan *Command,0)
+	state.voting = false
+
 	//Append REST api
 	apiPath := "/"+state.Id+"/"
 	apiPathLen := len(apiPath)
@@ -129,14 +138,18 @@ func (state *GameState) Prepare() {
 			}
 		})
 
-	//Prepare channels
-	state.queue = make(chan *Command,0)
-
 	//Message worker
 	go func(){
 		for {
 			cmd := <- state.queue
 			var resp []byte = nil
+
+			//Check for voting timeout
+			if(state.voting && cmd.Command != "go" && state.votingTime.Before(time.Now())) {
+				state.CheckVoting()
+			}
+
+			//Process commands
 			switch(cmd.Command) {
 			case "look":
 				resp = state.GetPlayerResponse(cmd.Player)
@@ -147,7 +160,7 @@ func (state *GameState) Prepare() {
 				resp = state.GetPlayerResponse(cmd.Player)
 			case "go":
 				if(cmd.Parameter != "") {
-					state.GoTo(cmd.Parameter)
+					state.GoTo(cmd.Parameter,cmd.Player)
 				}
 				resp = state.GetPlayerResponse(cmd.Player)
 			case "inventory":
@@ -159,7 +172,12 @@ func (state *GameState) Prepare() {
 			case "inspect":
 				item := cmd.Player.Inventory.Get(cmd.Parameter)
 				if(item != nil) {
-					resp, _ = json.Marshal(item.Attributes.Response) //decrease index as we are increasing it in inventory command
+					resp, _ = json.Marshal(item.Attributes.Response)
+				} else {
+					item := state.CurrentLocation.Items.Get(cmd.Parameter)
+					if(item != nil) {
+						resp, _ = json.Marshal(item.Attributes.Response)
+					}
 				}
 			case "pickup":
 				if(cmd.Parameter != "" && cmd.Player.Pickup(cmd.Parameter)) {
@@ -290,7 +308,69 @@ func (state *GameState) DoAction(player *Player, action *Action) {
 	}
 }
 
-func (state *GameState) GoTo(way string) {
+func (state *GameState) Travel(location *Location) {
+	state.voting = false
+
+	//Reset voting state
+	for _, player := range state.Players {
+		player.VotedLocation = nil
+	}
+
+	//Tell players
+	state.TellAll("You went to "+location.DescriptionShort)
+
+	//Add "back" exit if location was not visited before
+	if(location.Visit()) {
+		location.Exits = append(
+			location.Exits,
+			LocationExit{
+				Id:"back",
+				Target: state.CurrentLocation,
+			},
+		)
+	}
+
+	//Set new location
+	state.CurrentLocation = location
+}
+
+func (state *GameState) CheckVoting() {
+	//Voting not in progress? skip
+	if(!state.voting) {
+		return
+	}
+
+	//Check if all players voted
+	proceedToNewLocation := true
+	votes := make(map[*Location]int)
+	for _, player := range state.Players {
+		if(player.VotedLocation == nil) {
+			proceedToNewLocation = false
+		} else {
+			votes[player.VotedLocation]++
+		}
+	}
+
+	if(state.votingTime.Before(time.Now())) {
+		proceedToNewLocation = true
+	}
+
+	//Select voted location
+	if(proceedToNewLocation) {
+		var votedLocation *Location = nil
+		votedLocationVotes := 0
+		for location, votes := range votes {
+			if(votes > votedLocationVotes || (votes == votedLocationVotes && rand.Float64() > 0.5)) {
+				votedLocation = location
+				votedLocationVotes = votes
+			}
+		}
+		//Travel
+		state.Travel(votedLocation)
+	}
+}
+
+func (state *GameState) GoTo(way string, player *Player) {
 	oldLocation := state.CurrentLocation
 	var newLocation *Location = nil
 	for _, exit := range oldLocation.Exits {
@@ -300,26 +380,40 @@ func (state *GameState) GoTo(way string) {
 	}
 
 	if(newLocation != nil) {
-		state.TellAll("You went to "+newLocation.DescriptionShort)
-		if(newLocation.Visit()) {
-			newLocation.Exits = append(
-				newLocation.Exits,
-				LocationExit{
-					Id:"back",
-					Target: oldLocation,
-				},
-			)
+		if(len(state.Players) == 1) {
+			//One player: instant travel
+			state.Travel(newLocation)
+		} else {
+			//More players: voting
+			state.voting = true
+			state.votingTime = time.Now().Add(time.Second * 10)
+			player.VotedLocation = newLocation
+			//Count players who voted
+			votes, maxVotes := 0, len(state.Players)
+			for _, player := range state.Players {
+				if(player.VotedLocation != nil) {
+					votes++
+				}
+			}
+			//Send voting messages
+			voteStatus := "("+strconv.Itoa(votes)+" of "+strconv.Itoa(maxVotes)+" players voted)"
+			state.TellAllExcept(player.Name+" wants to go to "+newLocation.DescriptionShort+" "+voteStatus,player)
+			state.Tell("You want to go to "+newLocation.DescriptionShort+" "+voteStatus,player)
+			//Check if voting has been completed
+			state.CheckVoting()
 		}
-		state.CurrentLocation = newLocation
 	}
 }
 
-func (state *GameState) Describe() {
-	state.CurrentLocation.Describe()
-}
-
 func (state *GameState) Leave(player *Player) {
-
+	count := 0
+	newPlayers := make(Players,len(state.Players)-1)
+	for _, p := range state.Players {
+		if(p != player) {
+			newPlayers[count] = p
+			count++
+		}
+	}
 }
 
 func (state *GameState) Join(player *Player) {

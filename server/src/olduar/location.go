@@ -1,7 +1,6 @@
 package olduar
 
 import (
-	"fmt"
 	"math/rand"
 )
 
@@ -54,60 +53,6 @@ func (loc *Location) DoAction(state *GameState, player *Player, actionName strin
 			state.DoAction(player,&loc.Actions[index])
 		}
 	}
-}
-
-func (loc *Location) Describe() {
-	fmt.Println("----------------------------")
-	fmt.Println(loc.Name)
-	fmt.Println(loc.Description+"\n")
-
-	//Actions
-	actionCount := len(loc.Actions)
-	if(actionCount > 0) {
-		if(actionCount == 1) {
-			fmt.Print("There is only 1 action: ")
-		} else {
-			fmt.Print("Possible actions are: ")
-		}
-		for index, action := range loc.Actions {
-			fmt.Print(action.Id)
-			if(action.Description != "") {
-				fmt.Print(" ("+action.Description+")")
-			}
-			if(actionCount-2 == index) {
-				fmt.Print(" & ")
-			} else if(actionCount-1 != index) {
-				fmt.Print(", ")
-			}
-		}
-		fmt.Println();
-	}
-
-	//Exits
-	exitCount := len(loc.Exits)
-	if(exitCount > 0) {
-		if(exitCount == 1) {
-			fmt.Print("There is only 1 exit: ")
-		} else {
-			fmt.Print("Directions are: ")
-		}
-		for index, exit := range loc.Exits {
-			fmt.Print(exit.Id)
-			if(exit.Target != nil) {
-				fmt.Print(" ("+exit.Target.DescriptionShort+")")
-			}
-			if(exitCount-2 == index) {
-				fmt.Print(" & ")
-			} else if(exitCount-1 != index) {
-				fmt.Print(", ")
-			}
-		}
-		fmt.Println();
-	} else {
-		fmt.Println("There is no exit from this place")
-	}
-
-	fmt.Println("----------------------------")
 }
 
 func (loc *Location) Visit() bool {

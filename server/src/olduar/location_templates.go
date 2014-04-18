@@ -86,6 +86,9 @@ func CreateLocationFromTemplate(template *LocationTemplate) *Location {
 	//Generate items on ground
 	loc.Items = make(Inventory,0)
 	for _, item := range template.Items {
+		if(item.Chance > 0 && item.Chance < rand.Float64()) {
+			continue
+		}
 		if(item.Id != "") {
 			finalItem := ItemTemplateDirectory[item.Id].GenerateItem()
 			if(finalItem != nil) {
@@ -94,7 +97,6 @@ func CreateLocationFromTemplate(template *LocationTemplate) *Location {
 		} else if(item.Group != "") {
 			//Give any template from item group
 		}
-		//TODO: Handle chance
 	}
 
 	return &loc

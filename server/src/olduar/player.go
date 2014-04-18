@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+var ActivePlayersCount int = 0
 var ActivePlayers map[string]*Player = make(map[string]*Player)
 
 type Players []*Player
@@ -13,6 +14,7 @@ type Player struct {
 	Username string			`json:"username"`
 	Password string			`json:"password"`
 	AuthToken string		`json:"-"`
+	VotedLocation *Location `json:"-"`
 
 	Name string 			`json:"name"`
 	Health int64 			`json:"health"`
@@ -27,10 +29,15 @@ type Player struct {
 func (p *Player) Activate() {
 	p.AuthToken = "Basic "+base64.StdEncoding.EncodeToString([]byte(p.Username+":"+p.Password))
 	ActivePlayers[p.AuthToken] = p
+	ActivePlayersCount = len(ActivePlayers)
 }
 
 func (p *Player) Deactivate() {
-
+	if(p.GameState != nil) {
+		p.GameState.Leave(p)
+	}
+	delete(ActivePlayers,p.AuthToken)
+	ActivePlayersCount = len(ActivePlayers)
 }
 
 func (p *Player) Ability(target *Npc, skill string) {
