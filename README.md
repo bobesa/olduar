@@ -6,7 +6,7 @@ Democratic multiplayer text adventure
 REST Api
 ========
 
-### GET /room/look
+### GET /api/room/look
 Returns current location view (together with items, npcs, exits and actions)
 ```json
 {
@@ -31,27 +31,27 @@ Returns current location view (together with items, npcs, exits and actions)
 }
 ```
 
-### GET /room/go/{direction}
+### GET /api/room/go/{direction}
 Invalid __{direction}__ is ignored
 Return is the same as `/room/look`
 
-### GET /room/do/{action}
+### GET /api/room/do/{action}
 Invalid __{action}__ is ignored
 Return is the same as `/room/look`
 
-### GET /room/pickup/{item}
+### GET /api/room/pickup/{item}
 If invalid __{item}__ is specified or __{item}__ is not on ground, __null__ is returned
 Otherwise return is the same as `/room/look`
 
-### GET /room/drop/{item}
+### GET /api/room/drop/{item}
 If invalid __{item}__ is specified or __{item}__ is not in player's inventory, __null__ is returned
 Otherwise return is the same as `/room/look`
 
-### GET /room/use/{item}
+### GET /api/room/use/{item}
 If invalid {item} is specified __null__ is returned
 Otherwise return is the same as `/room/look`
 
-### GET /room/inventory
+### GET /api/room/inventory
 Returns array of items in player's inventory
 ```json
 [
@@ -68,7 +68,7 @@ Returns array of items in player's inventory
 ]
 ```
 
-### GET /room/inspect/{item}
+### GET /api/room/inspect/{item}
 Returns description of object or __null__ if __{item}__ is not available on ground or in inventory
 ```json
 {
@@ -78,7 +78,7 @@ Returns description of object or __null__ if __{item}__ is not available on grou
 ```
 *Attributes and other properties will be added over time*
 
-### GET /rooms
+### GET /api/rooms
 Returns list of rooms available (only visible rooms are listed)
 ```json
 [
@@ -87,17 +87,17 @@ Returns list of rooms available (only visible rooms are listed)
 ]
 ```
 
-### GET /join/{room}
+### GET /api/join/{room}
 Joins the specified __{room}__
 If player is already in some room, player will leave that room automatically (this is ignored if __{room}__ is same as player's current room)
 If __{room}__ does not exist it will be created
 Return is the same as `/{room}/look` or __null__ if maximum amount of rooms is reached or no __{room}__ is specified
 
-### GET /leave
+### GET /api/leave
 Leave the current room
 Return is the same as `/rooms`
 
-### GET /players
+### GET /api/players
 *TBA*
 Returns list of all active players
 ```json
@@ -109,7 +109,7 @@ Returns list of all active players
 ```
 *Attributes and other properties will be added over time*
 
-### GET /room/players
+### GET /api/room/players
 *TBA*
 Returns list of players in room
 ```json
@@ -121,7 +121,12 @@ Returns list of players in room
 ```
 *Attributes and other properties will be added over time*
 
-### POST /{room}/say
+### POST /api/room/say
 *TBA*
 Everything in __POST body__ is used as is and sent to all players as message
-If player is not connected to
+If player is not connected to any room __false__ is returned, otherwise __true_
+
+### POST /api/tell/{player}
+*TBA*
+Everything in __POST body__ is used as is and sent to __{player}__ as message
+If __{player}__ is not connected __false__ is returned, otherwise __true_
