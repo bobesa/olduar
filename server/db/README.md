@@ -5,7 +5,7 @@ Action properties
 
 `charges` (__int__, __optional__) amount of times action can be used
 
-`charges_msg` (__string, __optional__) message sent to player if this action is out of charges
+`charges_msg` (__string__, __optional__) message sent to player if this action is out of charges
 
 `requirements` (__array of requirements__, __optional__) requirements that must be met to do the action
 
@@ -13,7 +13,123 @@ Action properties
 
 `config` (__object__) configuration for the action
 
-*Action types will be added soon*
+### All action types
+
+`msg_party` (__string__) message sent to everyone except player doing the action
+
+`msg_player` (__string__) message sent to player doing the action
+
+`msg_all` (__string__) message sent to everyone
+
+*All messages can contain special keywords (such as `%player%`) & properties from config (such as `%value%`) that will translate to actual values*
+
+### Action type: message
+
+*In following example we declare a __hug__ action that will just send a message to party `"Belzebub hugged a tree"` and message `"You hugged a tree"` to player doing the action*
+```json
+{
+    "id":"hug",
+    "action":"message",
+    "config":{
+        "msg_party":"%player% hugged a tree",
+        "msg_player":"You hugged a tree"
+    },
+    "desc":"hug a tree"
+}
+```
+
+### Action type: effect
+
+`type` (__string__) type of effect
+
+`value` (__int__) value of effect
+
+*In following example we declare __drink__ action that will heal (`"type":"heal"`) player for 50 points (`"value":50`) and sending a message to party & player*
+```json
+{
+    "id":"drink",
+    "action": "effect",
+    "config": {
+        "type": "heal",
+        "value": 50,
+        "msg_party": "%player% drank the water from fountain and got healed for %value% damage",
+        "msg_player": "You drank the water from fountain"
+    },
+    "desc":"drink the water"
+}
+```
+
+### Action type: location
+
+`type` (__string__) type of location action (currently __use__ only)
+
+`value` (__string__) value of location action
+
+*In following example we declare a __fishing_pole__ that will call action on current location (`"type":"use"`) with id __fishing__ (`"value": "fishing"`)*
+```json
+{
+    "id": "fishing_pole",
+    "name": "Fishing pole",
+    "desc": "A simple fishing pole",
+    "type": "2hand",
+    "class": "staff",
+    "damage_min": 1,
+    "damage_max": 5,
+    "actions":[{
+        "action":"location",
+        "config":{
+            "type": "use",
+            "value": "fishing"
+        }
+    }]
+}
+```
+
+### Action type: give
+
+`amount` (__int__, __optional__) amount of items to give to player (__default__: 1)
+
+`items` (__array of items__) selection of items that player can get - see properties for each item below
+
+* `id` (__string__) what item will be given (invalid id or empty string means nothing will be given)
+* `chance` (__float__) what is relative chance for item to be selected
+* `msg_party` (__string__, __optional__) what will be sent to other players if item is given to player
+* `msg_player` (__string__, __optional__) what will be sent to player if item is given to player
+
+*In following `give` configuration we declare that player can get 1 item (`"amount":1`) from selection of items (`"items":[...`)*
+
+```json
+{
+    "amount":1,
+    "items":[
+        {
+            "id":"",
+            "chance":0.85,
+            "msg_party":"%player% tried fishing but came empty handed!",
+            "msg_player":"You failed to catch anything!"
+        },
+        {
+            "id":"useless_shoe",
+            "chance":0.1,
+            "msg_party":"%player% caught a useless shoe!",
+            "msg_player":"You caught a useless shoe!"
+        },
+        {
+            "id":"fish",
+            "chance":0.5,
+            "msg_party":"%player% caught a fish!",
+            "msg_player":"You caught a fish!"
+        },
+        {
+            "id":"goldfish",
+            "chance":0.001,
+            "msg_party":"%player% caught a goldfish!",
+            "msg_player":"You caught a goldfish!"
+        }
+    ]
+}
+```
+*Please note that declaring `"id":""` means no item will be given. Also note that if you sum `count` of all items it is not 100%, this is completely valid as `chance` is relative against other items in the table*
 
 Action Requirements properties
 ==============================
