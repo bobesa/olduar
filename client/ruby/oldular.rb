@@ -26,6 +26,7 @@ p url
 resource = RestClient::Resource.new( url )
 response = resource.get( :Authorization => auth )
 
+
 my_hash = JSON.parse(response)
 
-p my_hash
+puts JSON.pretty_generate(my_hash)
