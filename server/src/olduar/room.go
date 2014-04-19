@@ -24,15 +24,17 @@ func GetRoomList() []string {
 }
 
 func CreateRoomWithName(name string) *Room {
-	room := Room{
-		Id: name,
-		CurrentLocation: CreateLocationFromRegion("start"),
-		Players: make(Players,0),
+	room := CreateRoomFromSave(name+".json")
+	if(room == nil) {
+		room = &Room{
+			Id: name,
+			CurrentLocation: CreateLocationFromRegion("start"),
+			Players: make(Players,0),
+		}
+		room.CurrentLocation.Visit()
+		room.Prepare()
 	}
-	room.CurrentLocation.Visit()
-	room.Prepare()
-	AllRooms[room.Id] = &room
-	return &room
+	return room
 }
 
 func CreateRoomFromScratch() *Room {
@@ -40,30 +42,16 @@ func CreateRoomFromScratch() *Room {
 }
 
 func CreateRoomFromSave(filename string) *Room {
-	gs := Room{}
+	room := Room{}
 	data, err := ioutil.ReadFile("save/rooms/"+filename);
 	if(err == nil) {
-		err := json.Unmarshal(data, &gs)
+		err := json.Unmarshal(data, &room)
 		if(err == nil) {
-			gs.Prepare()
-			return &gs
+			room.Prepare()
+			return &room
 		}
 	}
 	return nil
-}
-
-func (room *Room) Save() {
-	data, err := json.Marshal(room)
-	if(err == nil) {
-		err = ioutil.WriteFile("save/rooms/"+room.Id+".json", data, 0644)
-		if err != nil {
-			fmt.Println("Failed to save room \""+room.Id+"\":",err)
-		} else {
-			fmt.Println("Room \""+room.Id+"\" has been saved")
-		}
-	} else {
-		fmt.Println("Failed to serialize room \""+room.Id+"\":",err)
-	}
 }
 
 // Message Object
@@ -122,7 +110,24 @@ type Room struct {
 	votingTime time.Time
 }
 
+func (room *Room) Save() {
+	return //TODO: Fix recursion
+	data, err := json.Marshal(room)
+	if(err == nil) {
+		err = ioutil.WriteFile("save/rooms/"+room.Id+".json", data, 0644)
+		if err != nil {
+			fmt.Println("Failed to save room \""+room.Id+"\":",err)
+		} else {
+			fmt.Println("Room \""+room.Id+"\" has been saved")
+		}
+	} else {
+		fmt.Println("Failed to serialize room \""+room.Id+"\":",err)
+	}
+}
+
 func (room *Room) Prepare() {
+	//Put room to list of rooms
+	AllRooms[room.Id] = room
 
 	//Prepare variables
 	room.queue = make(chan *Command,0)
@@ -409,7 +414,12 @@ func (room *Room) Leave(player *Player) {
 				count++
 			}
 		}
+		room.Players = newPlayers
 		player.Save()
+	}
+	if(len(room.Players) == 0) {
+		room.Save()
+		delete(AllRooms,room.Id)
 	}
 }
 

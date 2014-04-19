@@ -123,21 +123,36 @@ func Run(configFilename string) {
 				//Process command
 				w.Header().Set("Content-Type", "application/json")
 				switch(params[0]){
-				case "room":
-					if(player.Room == nil || paramLen < 2) {
-						http.NotFound(w,r)
+				case "save", "look", "do", "go", "inventory", "inspect", "pickup", "drop", "use":
+					if(player.Room == nil) {
+						w.Write([]byte("null"))
 						return
 					}
 					resp := make(chan []byte)
-					command := Command{Player:player, Command: strings.ToLower(params[1]), Response: resp}
-					if(paramLen>2) {
-						command.Parameter = strings.ToLower(params[2])
+					command := Command{Player:player, Command: strings.ToLower(params[0]), Response: resp}
+					if(paramLen>1) {
+						command.Parameter = strings.ToLower(params[1])
 					}
 					player.Room.queue <- &command
-					data := <- resp
-					w.Write(data)
+					w.Write(<- resp)
 
 				case "rename":
+
+					defer r.Body.Close()
+					nameData, err := ioutil.ReadAll(r.Body);
+					name := strings.Trim(string(nameData),"!?,.-= ")
+
+					if(err == nil && name != ""){
+						w.Write([]byte("true"))
+						player.Name = name;
+						if(player.Room == nil) {
+							player.Save()
+						}
+					}
+
+					if(name == "") {
+						w.Write([]byte("false"))
+					}
 
 				case "rooms":
 					data, err := json.Marshal(GetRoomList())
@@ -159,7 +174,7 @@ func Run(configFilename string) {
 					}
 
 				case "join":
-					if(paramLen>1) {
+					if(paramLen>1 && params[1] != "") {
 						room, found := AllRooms[params[1]]
 						if(!found) {
 							room = CreateRoomWithName(params[1])
@@ -167,8 +182,7 @@ func Run(configFilename string) {
 						room.Join(player)
 						resp := make(chan []byte)
 						room.queue <- &Command{Player:player, Command: "look", Response: resp}
-						data := <- resp
-						w.Write(data)
+						w.Write(<- resp)
 
 					} else {
 						w.Write([]byte("null"))

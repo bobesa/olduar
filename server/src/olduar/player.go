@@ -165,7 +165,7 @@ func (p *Player) Damage(value int64) {
 func PlayerByAuthorization(r *http.Request) (*Player,bool) {
 	//Authentication
 	authToken, found := r.Header["Authorization"]
-	if(!found) {
+	if(!found || len(authToken)!=1) {
 		return nil, false
 	}
 

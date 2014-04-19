@@ -6,7 +6,9 @@ Democratic multiplayer text adventure
 REST Api
 ========
 
-### GET /api/room/look
+All requests need to use Basic Authentication
+
+### GET /api/look
 Returns current location view (together with items, npcs, exits and actions)
 ```json
 {
@@ -31,32 +33,32 @@ Returns current location view (together with items, npcs, exits and actions)
 }
 ```
 
-### GET /api/room/go/{direction}
+### GET /api/go/{direction}
 Invalid __{direction}__ is ignored
 
-Return is the same as `/room/look`
+Return is the same as `/look`
 
-### GET /api/room/do/{action}
+### GET /api/do/{action}
 Invalid __{action}__ is ignored
 
-Return is the same as `/room/look`
+Return is the same as `/look`
 
-### GET /api/room/pickup/{item}
+### GET /api/pickup/{item}
 If invalid __{item}__ is specified or __{item}__ is not on ground, __null__ is returned
 
-Otherwise return is the same as `/room/look`
+Otherwise return is the same as `/look`
 
-### GET /api/room/drop/{item}
+### GET /api/drop/{item}
 If invalid __{item}__ is specified or __{item}__ is not in player's inventory, __null__ is returned
 
-Otherwise return is the same as `/room/look`
+Otherwise return is the same as `/look`
 
-### GET /api/room/use/{item}
-If invalid {item} is specified __null__ is returned
+### GET /api/use/{item}
+If invalid __{item}__ is specified __null__ is returned
 
-Otherwise return is the same as `/room/look`
+Otherwise return is the same as `/look`
 
-### GET /api/room/inventory
+### GET /api/inventory
 Returns array of items in player's inventory
 ```json
 [
@@ -73,7 +75,7 @@ Returns array of items in player's inventory
 ]
 ```
 
-### GET /api/room/inspect/{item}
+### GET /api/inspect/{item}
 Returns description of object or __null__ if __{item}__ is not available on ground or in inventory
 ```json
 {
@@ -83,7 +85,7 @@ Returns description of object or __null__ if __{item}__ is not available on grou
 ```
 *Attributes and other properties will be added over time*
 
-### GET /api/room/party
+### GET /api/party
 *TBA*
 
 Returns list of players in room
@@ -103,26 +105,24 @@ Everything in __POST body__ is used as is and sent to all players as message
 
 If player is not connected to any room __false__ is returned, otherwise __true__
 
-### GET /api/join/{room}
+### POST /api/join/{room}
 Joins the specified __{room}__
 
 If player is already in some room, player will leave that room automatically (this is ignored if __{room}__ is same as player's current room)
 
 If __{room}__ does not exist it will be created
 
-Return is the same as `/{room}/look` or __null__ if maximum amount of rooms is reached or no __{room}__ is specified
+Return is the same as `/look` or __null__ if maximum amount of rooms is reached or no __{room}__ is specified
 
-### GET /api/leave
+### POST /api/leave
 Leave the current room
 
 Return is the same as `/rooms`
 
 ### POST /api/rename
-*TBA*
-
 Everything in __POST body__ is used as string and set as __Name__
 
-If __empty string ("")__ is sent, renaming fails
+Returns __false__ if __empty string ("")__ is sent, otherwise __true__
 
 ### POST /api/register
 Values for __Username__ & __Password__ are used from Basic Authentication headers
