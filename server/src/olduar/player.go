@@ -7,24 +7,29 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"time"
+	"strings"
 )
 
 var ActivePlayersCount int = 0
 var ActivePlayers map[string]*Player = make(map[string]*Player)
+var ActivePlayersByUsername map[string]*Player = make(map[string]*Player)
 
 type Players []*Player
 
 type Player struct {
+	//Basic info
 	Username string			`json:"username"`
 	Password string			`json:"password"`
-	AuthToken string		`json:"-"`
-	VotedLocation *Location `json:"-"`
-
 	Name string 			`json:"name"`
+
+	//Stats
 	Health int64 			`json:"health"`
 	MaxHealth int64 		`json:"health_max"`
 	Inventory Inventory		`json:"inventory"`
 
+	//System properties
+	AuthToken string		`json:"-"`
+	VotedLocation *Location `json:"-"`
 	Room *Room 				`json:"-"`
 	LastResponseId int64	`json:"-"`
 	LastResponse time.Time	`json:"-"`
@@ -71,6 +76,7 @@ func (p *Player) Activate() {
 	p.AuthToken = "Basic "+base64.StdEncoding.EncodeToString([]byte(p.Username+":"+p.Password))
 	ActivePlayers[p.AuthToken] = p
 	ActivePlayersCount = len(ActivePlayers)
+	ActivePlayersByUsername[strings.ToLower(p.Username)] = p
 }
 
 func (p *Player) Deactivate() {

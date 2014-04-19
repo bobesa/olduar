@@ -409,6 +409,7 @@ func (room *Room) Leave(player *Player) {
 				count++
 			}
 		}
+		player.Save()
 	}
 }
 

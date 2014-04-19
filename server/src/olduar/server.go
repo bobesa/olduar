@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 	"encoding/json"
+	"encoding/base64"
 	"io/ioutil"
 )
 
@@ -25,6 +26,10 @@ type ServerConfig struct {
 
 var MainServerMux *http.ServeMux
 var MainServerInstance *http.Server
+
+func UsernameCheck(username string) bool {
+	return strings.IndexAny(username," :") == -1
+}
 
 func Run(configFilename string) {
 	fmt.Println("OLDUAR Server "+VERSION+"\n")
@@ -68,68 +73,106 @@ func Run(configFilename string) {
 		apiPath := "/api/"
 		apiPathLen := len(apiPath)
 		MainServerMux.HandleFunc(apiPath, func(w http.ResponseWriter, r *http.Request){
+				params := strings.Split(r.URL.Path[apiPathLen:],"/")
+				paramLen := len(params)
+				if(paramLen == 0) {
+					http.NotFound(w,r)
+					return
+				}
+
 				//If no player found or player don`t have any room - return 404
 				player, found := PlayerByAuthorization(r)
-				if(!found) {
+				if(params[0] == "register") {
+					if(found) {
+						//Authorization is valid - register is false
+						w.Write([]byte("false"))
+					} else {
+						authData, found := r.Header["Authorization"]
+						if (!found || len(authData) != 1) {
+							http.NotFound(w, r)
+							return;
+						}
+						//Check BASE64 auth for data
+						authInfo, err := base64.StdEncoding.DecodeString(strings.Replace(authData[0], "Basic ", "", 1))
+						if (err == nil) {
+							authData = strings.Split(string(authInfo), ":")
+							if (len(authData) == 2 && UsernameCheck(authData[0])) {
+								player, found = ActivePlayersByUsername[strings.ToLower(authData[0])]
+								if (!found) {
+									//Register user
+									player = &Player{Username:authData[0], Password:authData[1], Name:authData[0]}
+									player.Activate()
+									w.Write([]byte("true"))
+								} else {
+									//Username used already
+									w.Write([]byte("false"))
+								}
+							}
+						}
+						if (player == nil) {
+							w.Write([]byte("false"))
+						}
+					}
+					return
+				}
+				if(player == nil) {
 					http.NotFound(w,r)
 					return
 				}
 
 				//Process command
-				params := strings.Split(r.URL.Path[apiPathLen:],"/")
-				paramLen := len(params)
-				if(paramLen>0) {
-					w.Header().Set("Content-Type", "application/json")
-					switch(params[0]){
-					case "room":
-						if(player.Room == nil || paramLen < 2) {
-							http.NotFound(w,r)
-							return
+				w.Header().Set("Content-Type", "application/json")
+				switch(params[0]){
+				case "room":
+					if(player.Room == nil || paramLen < 2) {
+						http.NotFound(w,r)
+						return
+					}
+					resp := make(chan []byte)
+					command := Command{Player:player, Command: strings.ToLower(params[1]), Response: resp}
+					if(paramLen>2) {
+						command.Parameter = strings.ToLower(params[2])
+					}
+					player.Room.queue <- &command
+					data := <- resp
+					w.Write(data)
+
+				case "rename":
+
+				case "rooms":
+					data, err := json.Marshal(GetRoomList())
+					if(err == nil) {
+						w.Write(data)
+					} else {
+						w.Write([]byte("[]"))
+					}
+
+				case "leave":
+					if(player.Room != nil) {
+						player.Room.Leave(player)
+					}
+					data, err := json.Marshal(GetRoomList())
+					if(err == nil) {
+						w.Write(data)
+					} else {
+						w.Write([]byte("[]"))
+					}
+
+				case "join":
+					if(paramLen>1) {
+						room, found := AllRooms[params[1]]
+						if(!found) {
+							room = CreateRoomWithName(params[1])
 						}
+						room.Join(player)
 						resp := make(chan []byte)
-						command := Command{Player:player, Command: strings.ToLower(params[1]), Response: resp}
-						if(paramLen>2) {
-							command.Parameter = strings.ToLower(params[2])
-						}
-						player.Room.queue <- &command
+						room.queue <- &Command{Player:player, Command: "look", Response: resp}
 						data := <- resp
 						w.Write(data)
-					case "rooms":
-						data, err := json.Marshal(GetRoomList())
-						if(err == nil) {
-							w.Write(data)
-						} else {
-							w.Write([]byte("[]"))
-						}
-					case "leave":
-						if(player.Room != nil) {
-							player.Room.Leave(player)
-						}
-						data, err := json.Marshal(GetRoomList())
-						if(err == nil) {
-							w.Write(data)
-						} else {
-							w.Write([]byte("[]"))
-						}
 
-					case "join":
-						if(paramLen>1) {
-							room, found := AllRooms[params[1]]
-							if(!found) {
-								room = CreateRoomWithName(params[1])
-							}
-							room.Join(player)
-							resp := make(chan []byte)
-							room.queue <- &Command{Player:player, Command: "look", Response: resp}
-							data := <- resp
-							w.Write(data)
-
-						} else {
-							w.Write([]byte("null"))
-						}
+					} else {
+						w.Write([]byte("null"))
 					}
-				} else {
-					http.NotFound(w,r)
 				}
 			})
 
