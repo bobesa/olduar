@@ -10,14 +10,14 @@ def help
 end
 
 server = 'localhost:8080'
-room = 'test'
 action = ARGV[0]
 
 help unless action
 
 id = ARGV[1] if ARGV[1]
-url = "#{server}/#{room}/#{action}" unless id
-url = "#{server}/#{room}/#{action}/#{id}" if id
+url = "#{server}/api/room/#{action}" unless id
+url = "#{server}/api/room/#{action}/#{id}" if id
+url = "#{server}/api/#{action}/#{id}" if action =='join'
 
 auth = 'Basic ' + Base64.encode64( 'test:test2' ).chomp
 
