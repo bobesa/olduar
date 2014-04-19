@@ -71,6 +71,9 @@ func Run(configFilename string) {
 		game.Join(player)
 		game.Join(player2)
 
+		//Start web playable client
+		MainServerMux.Handle("/client/", http.StripPrefix("/client/", http.FileServer(http.Dir("../client/html/"))))
+
 		//Start server
 		MainServerInstance.ListenAndServe()
 	}

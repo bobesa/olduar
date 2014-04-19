@@ -1,0 +1,86 @@
+@animationLength: 0.5s;
+@itemPadding: 10px;
+@itemSpacing: 5px;
+
+html, body {
+	font-size: 14px;
+	margin: 10px;
+	padding: 0;
+	background-color: #FFF;
+}
+
+#account {
+	display: none;
+}
+
+//Event log
+#eventLog {
+	height: 100px;
+	padding-bottom: @itemPadding;
+	margin-bottom: @itemPadding;
+	border-bottom: 2px solid #000;
+	overflow: hidden;
+	overflow-y: auto;
+}
+#eventLog > div {
+	font-size: 12px;
+}
+
+//List of items
+.list {
+
+	@-webkit-keyframes appendItem {
+		from {
+			max-width: 0;
+			padding: 0;
+			background-color: #F00;
+		}
+		to {
+			max-width: 200px;
+			padding: 0 @itemPadding 0 @itemPadding;
+			background-color: #CCC;
+		}
+	}
+
+	div {
+		border-radius: 9px;
+		position: relative;
+		top: 5px;
+		-webkit-animation: appendItem @animationLength;
+		text-align: center;
+		max-width: 200px;
+		padding: 0 @itemPadding 0 @itemPadding;
+		display: inline-block;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		transition: max-width @animationLength ease, padding @animationLength ease;
+		background-color: #CCC;
+		margin-right: @itemSpacing;
+	}
+
+	div:last-child {
+		margin-right: 0;
+	}
+
+	div:hover {
+		cursor: pointer;
+		text-decoration: underline;
+	}
+
+	div.fade {
+		pointer-events: none;
+		max-width: 0;
+		padding: 0 0 0 0;
+	}
+}
+
+.list:not(:empty):before {
+	content: attr(data-title) " [";
+	padding: 0 @itemSpacing 0 0;
+}
+
+.list:not(:empty):after {
+	content: "]";
+	padding: 0 0 0 @itemSpacing;
+}
