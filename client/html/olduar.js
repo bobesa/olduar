@@ -1,24 +1,31 @@
 var Server = "",
-	Username = "test",
-	Password = "test2";
+	Username = "",
+	Password = "";
 
 var FADE_ANIMATION_TIME = 500;
 
-var request = function(command,param,callback){
-	if(param != "") command += "/";
+var request = function(method,command,value,callback){
+	if(typeof value == "function") {
+		callback = value;
+		value = null;
+	}
 	var xhr = new XMLHttpRequest();
 	xhr.addEventListener("readystatechange",function(){
 		if(xhr.readyState==4) {
 			if (xhr.status == 200) {
 				callback(JSON.parse(xhr.responseText));
+				document.getElementById("game").style.display = "";
+				document.getElementById("account").style.display = "none";
 			} else {
 				callback(null);
+				document.getElementById("game").style.display = "none";
+				document.getElementById("account").style.display = "";
 			}
 		}
 	});
-	xhr.open("GET", "/test/"+command+param);
+	xhr.open(method.toUpperCase(), "/api/"+command);
 	xhr.setRequestHeader("Authorization", "Basic " + btoa(Username+":"+Password));
-	xhr.send();
+	xhr.send(value);
 },
 	domEventLog,
 	domLocationName,
@@ -134,17 +141,17 @@ var parseLocationData = function(data){
 
 		updateDomList(domLocationExits,listExits,data.exits,function(entry){
 			entry.dom.addEventListener("click",function(){
-				request("go",entry.id,parseLocationData);
+				request("get","go/"+entry.id,parseLocationData);
 			});
 		});
 		updateDomList(domLocationActions,listActions,data.actions,function(entry){
 			entry.dom.addEventListener("click",function(){
-				request("do",entry.id,parseLocationData);
+				request("get","do/"+entry.id,parseLocationData);
 			});
 		});
 		updateDomList(domLocationItems,listItems,data.items,function(entry){
 			entry.dom.addEventListener("click",function(){
-				request("pickup",entry.id,parseLocationData);
+				request("get","pickup/"+entry.id,parseLocationData);
 			});
 			//TODO: Inspection on hover
 		});
@@ -158,8 +165,40 @@ window.addEventListener("load",function(){
 	domLocationExits = document.getElementById("locationExits");
 	domLocationActions = document.getElementById("locationActions");
 	domLocationItems = document.getElementById("locationItems");
+
+	//Account settings
+	Username = document.getElementById("txtUser").value;
+	Password = document.getElementById("txtPass").value;
+
+	//Buttons
+	document.getElementById("buttonRegister").addEventListener("click",function(){
+		request("post","register",function(success){
+			if(success){
+				request("get","look",parseLocationData);
+			} else {
+				alert("Username is taken or invalid")
+			}
+		});
+	});
+	document.getElementById("buttonRename").addEventListener("click",function(){
+		request("post","rename",document.getElementById("txtName").value,function(success){
+			if(!success) alert("Renaming failed")
+		});
+	});
+	document.getElementById("buttonJoin").addEventListener("click",function(){
+		request("post","join/"+document.getElementById("txtRoom").value,parseLocationData);
+	});
+	document.getElementById("buttonLeave").addEventListener("click",function(){
+		request("post","leave",function(rooms){
+
+		});
+	});
+
+	//Polling
 	setInterval(function(){
-		//request("look","",parseLocationData);
+		//request("get","look",parseLocationData);
 	},2000);
-	request("look","",parseLocationData);
+
+	//Initial request
+	request("get","look",parseLocationData);
 });
