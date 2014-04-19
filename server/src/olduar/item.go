@@ -185,6 +185,6 @@ func (item *Item) GenerateResponse() ResponseItem {
 
 func (item *Item) Use(player *Player) {
 	for index, _ := range item.Attributes.Actions {
-		player.GameState.DoAction(player,&item.Attributes.Actions[index])
+		player.Room.DoAction(player,&item.Attributes.Actions[index])
 	}
 }

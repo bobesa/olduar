@@ -6,7 +6,7 @@ Democratic multiplayer text adventure
 REST Api
 ========
 
-### GET /{room}/look
+### GET /room/look
 Returns current location view (together with items, npcs, exits and actions)
 ```json
 {
@@ -31,27 +31,27 @@ Returns current location view (together with items, npcs, exits and actions)
 }
 ```
 
-### GET /{room}/go/{exit_id}
-Invalid {exit_id} is ignored
-Return is the same as `/{room}/look`
+### GET /room/go/{direction}
+Invalid __{direction}__ is ignored
+Return is the same as `/room/look`
 
-### GET /{room}/do/{action_id}
-Invalid {action_id} is ignored
-Return is the same as `/{room}/look`
+### GET /room/do/{action}
+Invalid __{action}__ is ignored
+Return is the same as `/room/look`
 
-### GET /{room}/pickup/{item_id}
-If invalid {item_id} is specified or {item_id} is not on ground, __null__ is returned
-Otherwise return is the same as `/{room}/look`
+### GET /room/pickup/{item}
+If invalid __{item}__ is specified or __{item}__ is not on ground, __null__ is returned
+Otherwise return is the same as `/room/look`
 
-### GET /{room}/drop/{item_id}
-If invalid {item_id} is specified or {item_id} is not in player's inventory, __null__ is returned
-Otherwise return is the same as `/{room}/look`
+### GET /room/drop/{item}
+If invalid __{item}__ is specified or __{item}__ is not in player's inventory, __null__ is returned
+Otherwise return is the same as `/room/look`
 
-### GET /{room}/use/{item_id}
-If invalid {item_id} is specified __null__ is returned
-Otherwise return is the same as `/{room}/look`
+### GET /room/use/{item}
+If invalid {item} is specified __null__ is returned
+Otherwise return is the same as `/room/look`
 
-### GET /{room}/inventory
+### GET /room/inventory
 Returns array of items in player's inventory
 ```json
 [
@@ -68,8 +68,8 @@ Returns array of items in player's inventory
 ]
 ```
 
-### GET /{room}/inspect/{item_id}
-Returns description of object
+### GET /room/inspect/{item}
+Returns description of object or __null__ if __{item}__ is not available on ground or in inventory
 ```json
 {
     "name": "Fishing pole",
@@ -79,7 +79,6 @@ Returns description of object
 *Attributes and other properties will be added over time*
 
 ### GET /rooms
-*TBA*
 Returns list of rooms available (only visible rooms are listed)
 ```json
 [
@@ -89,17 +88,28 @@ Returns list of rooms available (only visible rooms are listed)
 ```
 
 ### GET /join/{room}
-*TBA*
-Joins the specified room
-If player is already in some room, player will leave that room automatically (this is ignored if specified room is same as player's current room)
-Return is the same as `/{room}/look`
+Joins the specified __{room}__
+If player is already in some room, player will leave that room automatically (this is ignored if __{room}__ is same as player's current room)
+If __{room}__ does not exist it will be created
+Return is the same as `/{room}/look` or __null__ if maximum amount of rooms is reached or no __{room}__ is specified
 
 ### GET /leave
-*TBA*
 Leave the current room
 Return is the same as `/rooms`
 
-### GET /{room_id}/players
+### GET /players
+*TBA*
+Returns list of all active players
+```json
+[
+    "Belzebub",
+    "Arthur",
+    "Kain"
+]
+```
+*Attributes and other properties will be added over time*
+
+### GET /room/players
 *TBA*
 Returns list of players in room
 ```json

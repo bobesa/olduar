@@ -4,8 +4,6 @@ import (
 	"strconv"
 	"encoding/json"
 	"io/ioutil"
-	"net/http"
-	"strings"
 	"fmt"
 	"math/rand"
 	"time"
@@ -13,26 +11,37 @@ import (
 
 // Create Game State from save / scratch
 
-var AllGameStates GameStates = make(GameStates,0)
+var AllRooms map[string]*Room = make(map[string]*Room)
 
-func CreateGameStateFromName(name string) *GameState {
-	gs := GameState{
+func GetRoomList() []string {
+	roomList := make([]string,len(AllRooms))
+	roomId := 0
+	for room := range AllRooms {
+		roomList[roomId] = room
+		roomId++
+	}
+	return roomList
+}
+
+func CreateRoomWithName(name string) *Room {
+	room := Room{
 		Id: name,
 		CurrentLocation: CreateLocationFromRegion("start"),
 		Players: make(Players,0),
 	}
-	gs.CurrentLocation.Visit()
-	gs.Prepare()
-	return &gs
+	room.CurrentLocation.Visit()
+	room.Prepare()
+	AllRooms[room.Id] = &room
+	return &room
 }
 
-func CreateGameStateFromScratch() *GameState {
-	return CreateGameStateFromName("game_" + strconv.Itoa(len(AllGameStates)+1))
+func CreateRoomFromScratch() *Room {
+	return CreateRoomWithName("game_" + strconv.Itoa(len(AllRooms)+1))
 }
 
-func CreateGameStateFromSave(filename string) *GameState {
-	gs := GameState{}
-	data, err := ioutil.ReadFile("save/"+filename);
+func CreateRoomFromSave(filename string) *Room {
+	gs := Room{}
+	data, err := ioutil.ReadFile("save/rooms/"+filename);
 	if(err == nil) {
 		err := json.Unmarshal(data, &gs)
 		if(err == nil) {
@@ -41,6 +50,20 @@ func CreateGameStateFromSave(filename string) *GameState {
 		}
 	}
 	return nil
+}
+
+func (room *Room) Save() {
+	data, err := json.Marshal(room)
+	if(err == nil) {
+		err = ioutil.WriteFile("save/rooms/"+room.Id+".json", data, 0644)
+		if err != nil {
+			fmt.Println("Failed to save room \""+room.Id+"\":",err)
+		} else {
+			fmt.Println("Room \""+room.Id+"\" has been saved")
+		}
+	} else {
+		fmt.Println("Failed to serialize room \""+room.Id+"\":",err)
+	}
 }
 
 // Message Object
@@ -85,9 +108,9 @@ type ResponseItemDetail struct {
 
 // Game State and functions
 
-type GameStates []*GameState
+type Rooms []*Room
 
-type GameState struct {
+type Room struct {
 	Id string 					`json:"id"`
 	CurrentLocation *Location 	`json:"location"`
 	Players Players				`json:"-"`
@@ -99,70 +122,40 @@ type GameState struct {
 	votingTime time.Time
 }
 
-func (state *GameState) Prepare() {
+func (room *Room) Prepare() {
 
 	//Prepare variables
-	state.queue = make(chan *Command,0)
-	state.voting = false
-
-	//Append REST api
-	apiPath := "/"+state.Id+"/"
-	apiPathLen := len(apiPath)
-	MainServerMux.HandleFunc(apiPath, func(w http.ResponseWriter, r *http.Request){
-			//Authentication
-			authToken, found := r.Header["Authorization"]
-			if(!found) {
-				http.NotFound(w,r)
-				return
-			}
-
-			//Search for player in state
-			player, active := ActivePlayers[authToken[0]]
-			if(!active) {
-				http.NotFound(w,r)
-				return
-			}
-
-			//Process command
-			params := strings.Split(r.URL.Path[apiPathLen:],"/")
-			if(len(params)>0) {
-				resp := make(chan []byte)
-				command := Command{Player:player, Command: strings.ToLower(params[0]), Response: resp}
-				if(len(params)>1) {
-					command.Parameter = strings.ToLower(params[1])
-				}
-				state.queue <- &command
-				data := <- resp
-				w.Header().Set("Content-Type", "application/json")
-				w.Write(data)
-			}
-		})
+	room.queue = make(chan *Command,0)
+	room.voting = false
 
 	//Message worker
 	go func(){
 		for {
-			cmd := <- state.queue
+			cmd := <- room.queue
 			var resp []byte = nil
 
 			//Check for voting timeout
-			if(state.voting && cmd.Command != "go" && state.votingTime.Before(time.Now())) {
-				state.CheckVoting()
+			if(room.voting && cmd.Command != "go" && room.votingTime.Before(time.Now())) {
+				room.CheckVoting()
 			}
 
 			//Process commands
 			switch(cmd.Command) {
+			case "save":
+				room.Save()
+				resp = []byte("null")
 			case "look":
-				resp = state.GetPlayerResponse(cmd.Player)
+				resp = room.GetPlayerResponse(cmd.Player)
 			case "do":
 				if(cmd.Parameter != "") {
-					state.CurrentLocation.DoAction(state,cmd.Player,cmd.Parameter)
+					room.CurrentLocation.DoAction(room,cmd.Player,cmd.Parameter)
 				}
-				resp = state.GetPlayerResponse(cmd.Player)
+				resp = room.GetPlayerResponse(cmd.Player)
 			case "go":
 				if(cmd.Parameter != "") {
-					state.GoTo(cmd.Parameter,cmd.Player)
+					room.GoTo(cmd.Parameter,cmd.Player)
 				}
-				resp = state.GetPlayerResponse(cmd.Player)
+				resp = room.GetPlayerResponse(cmd.Player)
 			case "inventory":
 				inventory := make([]ResponseItem,len(cmd.Player.Inventory))
 				for index, item := range cmd.Player.Inventory {
@@ -174,22 +167,22 @@ func (state *GameState) Prepare() {
 				if(item != nil) {
 					resp, _ = json.Marshal(item.Attributes.Response)
 				} else {
-					item := state.CurrentLocation.Items.Get(cmd.Parameter)
+					item := room.CurrentLocation.Items.Get(cmd.Parameter)
 					if(item != nil) {
 						resp, _ = json.Marshal(item.Attributes.Response)
 					}
 				}
 			case "pickup":
 				if(cmd.Parameter != "" && cmd.Player.Pickup(cmd.Parameter)) {
-					resp = state.GetPlayerResponse(cmd.Player)
+					resp = room.GetPlayerResponse(cmd.Player)
 				}
 			case "drop":
 				if(cmd.Player.Drop(cmd.Parameter)) {
-					resp = state.GetPlayerResponse(cmd.Player)
+					resp = room.GetPlayerResponse(cmd.Player)
 				}
 			case "use":
 				if(cmd.Player.Use(cmd.Parameter)) {
-					resp = state.GetPlayerResponse(cmd.Player)
+					resp = room.GetPlayerResponse(cmd.Player)
 				}
 			}
 			if(resp == nil) {
@@ -199,46 +192,46 @@ func (state *GameState) Prepare() {
 		}
 	}()
 
-	fmt.Println("Game room \""+state.Id+"\" is ready")
+	fmt.Println("Game room \""+room.Id+"\" is ready")
 }
 
-func (state *GameState) AddMessage(message *MessageObject) {
-	state.LastMessageId++
-	message.Id = state.LastMessageId
-	state.History = append(state.History, message)
+func (room *Room) AddMessage(message *MessageObject) {
+	room.LastMessageId++
+	message.Id = room.LastMessageId
+	room.History = append(room.History, message)
 }
 
-func (state *GameState) TellAll(str string) {
-	state.AddMessage(&MessageObject{Message:str})
+func (room *Room) TellAll(str string) {
+	room.AddMessage(&MessageObject{Message:str})
 }
 
-func (state *GameState) TellAllExcept(str string, player *Player) {
-	state.AddMessage(&MessageObject{Message:str,IgnoredPlayer:player})
+func (room *Room) TellAllExcept(str string, player *Player) {
+	room.AddMessage(&MessageObject{Message:str,IgnoredPlayer:player})
 }
 
-func (state *GameState) Tell(str string, player *Player) {
-	state.AddMessage(&MessageObject{Message:str,OnlyForPlayer:player})
+func (room *Room) Tell(str string, player *Player) {
+	room.AddMessage(&MessageObject{Message:str,OnlyForPlayer:player})
 }
 
-func (state *GameState) GetPlayerResponse(player *Player) []byte {
+func (room *Room) GetPlayerResponse(player *Player) []byte {
 	from := player.LastResponseId
 
 	res := Response{
-		Name: state.CurrentLocation.Name,
-		Description: state.CurrentLocation.Description,
+		Name: room.CurrentLocation.Name,
+		Description: room.CurrentLocation.Description,
 		History: make(MessageObjects,0),
 		Exits: make(map[string]string),
 		Actions: make(map[string]string),
-		Items: make([]ResponseItem,len(state.CurrentLocation.Items)),
+		Items: make([]ResponseItem,len(room.CurrentLocation.Items)),
 	}
 
 	//Append items
-	for index, item := range state.CurrentLocation.Items {
+	for index, item := range room.CurrentLocation.Items {
 		res.Items[index] = item.GenerateResponse()
 	}
 
 	//Append history
-	for _, entry := range state.History {
+	for _, entry := range room.History {
 		if(entry.Id > from && ((entry.IgnoredPlayer == nil && entry.OnlyForPlayer == nil) || (entry.IgnoredPlayer != player && entry.OnlyForPlayer == nil) || (entry.IgnoredPlayer == nil && entry.OnlyForPlayer == player))) {
 			res.History = append(res.History,entry)
 			player.LastResponseId = entry.Id
@@ -246,12 +239,12 @@ func (state *GameState) GetPlayerResponse(player *Player) []byte {
 	}
 
 	//Append exits
-	for _, exit := range state.CurrentLocation.Exits {
+	for _, exit := range room.CurrentLocation.Exits {
 		res.Exits[exit.Id] = exit.Target.DescriptionShort
 	}
 
 	//Append actions
-	for _, action := range state.CurrentLocation.Actions {
+	for _, action := range room.CurrentLocation.Actions {
 		if(action.Charges != 0) {
 			res.Actions[action.Id] = action.Description
 		}
@@ -265,7 +258,7 @@ func (state *GameState) GetPlayerResponse(player *Player) []byte {
 	return data
 }
 
-func (state *GameState) DoAction(player *Player, action *Action) {
+func (room *Room) DoAction(player *Player, action *Action) {
 	//Check for requirements
 	if(len(action.Requirements)>0 && (action.Charges == -1 || action.Charges > 0)) {
 		for _, requirement := range action.Requirements {
@@ -273,7 +266,7 @@ func (state *GameState) DoAction(player *Player, action *Action) {
 			case "item":
 				if(!player.Owns(requirement.Value)) {
 					if(requirement.ErrorMessage != "") {
-						state.Tell(requirement.ErrorMessage,player)
+						room.Tell(requirement.ErrorMessage,player)
 					}
 					return
 				}
@@ -291,33 +284,33 @@ func (state *GameState) DoAction(player *Player, action *Action) {
 	}
 
 	//Do actual action
-	action.Do(state,player)
+	action.Do(room,player)
 
 	//Messages
 	message, found := action.Config["msg_player"]
 	if(found) {
-		state.Tell(AppendVariablesToString(message.(string),player,action.Config),player)
+		room.Tell(AppendVariablesToString(message.(string),player,action.Config),player)
 	}
 	message, found = action.Config["msg_party"]
 	if(found) {
-		state.TellAllExcept(AppendVariablesToString(message.(string),player,action.Config),player)
+		room.TellAllExcept(AppendVariablesToString(message.(string),player,action.Config),player)
 	}
 	message, found = action.Config["msg"]
 	if(found) {
-		state.TellAll(AppendVariablesToString(message.(string),player,action.Config))
+		room.TellAll(AppendVariablesToString(message.(string),player,action.Config))
 	}
 }
 
-func (state *GameState) Travel(location *Location) {
-	state.voting = false
+func (room *Room) Travel(location *Location) {
+	room.voting = false
 
 	//Reset voting state
-	for _, player := range state.Players {
+	for _, player := range room.Players {
 		player.VotedLocation = nil
 	}
 
 	//Tell players
-	state.TellAll("You went to "+location.DescriptionShort)
+	room.TellAll("You went to "+location.DescriptionShort)
 
 	//Add "back" exit if location was not visited before
 	if(location.Visit()) {
@@ -325,25 +318,25 @@ func (state *GameState) Travel(location *Location) {
 			location.Exits,
 			LocationExit{
 				Id:"back",
-				Target: state.CurrentLocation,
+				Target: room.CurrentLocation,
 			},
 		)
 	}
 
 	//Set new location
-	state.CurrentLocation = location
+	room.CurrentLocation = location
 }
 
-func (state *GameState) CheckVoting() {
+func (room *Room) CheckVoting() {
 	//Voting not in progress? skip
-	if(!state.voting) {
+	if(!room.voting) {
 		return
 	}
 
 	//Check if all players voted
 	proceedToNewLocation := true
 	votes := make(map[*Location]int)
-	for _, player := range state.Players {
+	for _, player := range room.Players {
 		if(player.VotedLocation == nil) {
 			proceedToNewLocation = false
 		} else {
@@ -351,7 +344,7 @@ func (state *GameState) CheckVoting() {
 		}
 	}
 
-	if(state.votingTime.Before(time.Now())) {
+	if(room.votingTime.Before(time.Now())) {
 		proceedToNewLocation = true
 	}
 
@@ -366,12 +359,12 @@ func (state *GameState) CheckVoting() {
 			}
 		}
 		//Travel
-		state.Travel(votedLocation)
+		room.Travel(votedLocation)
 	}
 }
 
-func (state *GameState) GoTo(way string, player *Player) {
-	oldLocation := state.CurrentLocation
+func (room *Room) GoTo(way string, player *Player) {
+	oldLocation := room.CurrentLocation
 	var newLocation *Location = nil
 	for _, exit := range oldLocation.Exits {
 		if(exit.Id == way) {
@@ -380,43 +373,46 @@ func (state *GameState) GoTo(way string, player *Player) {
 	}
 
 	if(newLocation != nil) {
-		if(len(state.Players) == 1) {
+		if(len(room.Players) == 1) {
 			//One player: instant travel
-			state.Travel(newLocation)
+			room.Travel(newLocation)
 		} else {
 			//More players: voting
-			state.voting = true
-			state.votingTime = time.Now().Add(time.Second * 10)
+			room.voting = true
+			room.votingTime = time.Now().Add(time.Second * 10)
 			player.VotedLocation = newLocation
 			//Count players who voted
-			votes, maxVotes := 0, len(state.Players)
-			for _, player := range state.Players {
+			votes, maxVotes := 0, len(room.Players)
+			for _, player := range room.Players {
 				if(player.VotedLocation != nil) {
 					votes++
 				}
 			}
 			//Send voting messages
 			voteStatus := "("+strconv.Itoa(votes)+" of "+strconv.Itoa(maxVotes)+" players voted)"
-			state.TellAllExcept(player.Name+" wants to go to "+newLocation.DescriptionShort+" "+voteStatus,player)
-			state.Tell("You want to go to "+newLocation.DescriptionShort+" "+voteStatus,player)
+			room.TellAllExcept(player.Name+" wants to go to "+newLocation.DescriptionShort+" "+voteStatus,player)
+			room.Tell("You want to go to "+newLocation.DescriptionShort+" "+voteStatus,player)
 			//Check if voting has been completed
-			state.CheckVoting()
+			room.CheckVoting()
 		}
 	}
 }
 
-func (state *GameState) Leave(player *Player) {
-	count := 0
-	newPlayers := make(Players,len(state.Players)-1)
-	for _, p := range state.Players {
-		if(p != player) {
-			newPlayers[count] = p
-			count++
+func (room *Room) Leave(player *Player) {
+	if(player.Room == room) {
+		player.Room = nil
+		count := 0
+		newPlayers := make(Players,len(room.Players)-1)
+		for _, p := range room.Players {
+			if(p != player) {
+				newPlayers[count] = p
+				count++
+			}
 		}
 	}
 }
 
-func (state *GameState) Join(player *Player) {
-	state.Players = append(state.Players,player)
-	player.GameState = state
+func (room *Room) Join(player *Player) {
+	room.Players = append(room.Players,player)
+	player.Room = room
 }

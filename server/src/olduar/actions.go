@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-type ActionFunction func (state *GameState, player *Player, config map[string]interface{})
+type ActionFunction func (room *Room, player *Player, config map[string]interface{})
 
 func AppendVariablesToString(str string, player *Player, config map[string]interface{}) string {
 	str = strings.Replace(str,"%player%",player.Name,-1)
@@ -19,23 +19,23 @@ var ActionsDirectory = make(map[string]ActionFunction)
 
 func InitializeActions() {
 
-	ActionsDirectory["message"] = func(state *GameState,player *Player,config map[string]interface{}) {} //Automatically processed - just a placeholder
+	ActionsDirectory["message"] = func(room *Room,player *Player,config map[string]interface{}) {} //Automatically processed - just a placeholder
 
-	ActionsDirectory["location"] = func(state *GameState,player *Player,config map[string]interface{}) {
+	ActionsDirectory["location"] = func(room *Room,player *Player,config map[string]interface{}) {
 		actionType, found := config["type"]
 		if(found) {
-			location := state.CurrentLocation
+			location := room.CurrentLocation
 			switch (actionType){
 			case "use":
 				actionName, found := config["value"]
 				if(found) {
-					location.DoAction(state,player,fmt.Sprint(actionName))
+					location.DoAction(room,player,fmt.Sprint(actionName))
 				}
 			}
 		}
 	}
 
-	ActionsDirectory["give"] = func(state *GameState,player *Player,config map[string]interface{}) {
+	ActionsDirectory["give"] = func(room *Room,player *Player,config map[string]interface{}) {
 		//Amount of looted items
 		amount := 1
 		value, found := config["amount"]
@@ -77,10 +77,10 @@ func InitializeActions() {
 		items := GetItemsFromLootTable(amount, table)
 		for _, item := range items {
 			if (item.MessagePlayer != "") {
-				state.Tell(item.MessagePlayer, player)
+				room.Tell(item.MessagePlayer, player)
 			}
 			if (item.MessageParty != "") {
-				state.TellAllExcept(item.MessageParty, player)
+				room.TellAllExcept(item.MessageParty, player)
 			}
 			if (item.Template != nil) {
 				player.Inventory = append(player.Inventory, item.Template.GenerateItem())
@@ -88,7 +88,7 @@ func InitializeActions() {
 		}
 	}
 
-	ActionsDirectory["effect"] = func(state *GameState,player *Player,config map[string]interface{}) {
+	ActionsDirectory["effect"] = func(room *Room,player *Player,config map[string]interface{}) {
 		//Process effect
 		fxType, found := config["type"]
 		if(found) {

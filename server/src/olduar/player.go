@@ -2,6 +2,10 @@ package olduar
 
 import (
 	"encoding/base64"
+	"fmt"
+	"net/http"
+	"encoding/json"
+	"io/ioutil"
 	"time"
 )
 
@@ -21,9 +25,46 @@ type Player struct {
 	MaxHealth int64 		`json:"health_max"`
 	Inventory Inventory		`json:"inventory"`
 
-	GameState *GameState 	`json:"-"`
+	Room *Room 				`json:"-"`
 	LastResponseId int64	`json:"-"`
 	LastResponse time.Time	`json:"-"`
+}
+
+func LoadAllPlayers(path string) {
+	files, err := ioutil.ReadDir(path);
+	if(err == nil) {
+		for _, file := range files {
+			player := &Player{}
+			player.Load(path + file.Name())
+		}
+		fmt.Println("Loaded",len(ActivePlayers),"players")
+	} else {
+		fmt.Println("Unable to load players \"save/players\"")
+	}
+}
+
+func (player *Player) Load(filename string) {
+	data, err := ioutil.ReadFile(filename);
+	if(err == nil) {
+		err := json.Unmarshal(data, player)
+		if(err == nil) {
+			player.Activate()
+		}
+	}
+}
+
+func (player *Player) Save() {
+	data, err := json.Marshal(player)
+	if(err == nil) {
+		err = ioutil.WriteFile("save/players/"+player.Username+".json", data, 0644)
+		if(err != nil) {
+			fmt.Println("Failed to save player \""+player.Username+"\":",err)
+		} else {
+			fmt.Println("Player \""+player.Username+"\" has been saved")
+		}
+	} else {
+		fmt.Println("Failed to serialize player \""+player.Username+"\":",err)
+	}
 }
 
 func (p *Player) Activate() {
@@ -33,8 +74,8 @@ func (p *Player) Activate() {
 }
 
 func (p *Player) Deactivate() {
-	if(p.GameState != nil) {
-		p.GameState.Leave(p)
+	if(p.Room != nil) {
+		p.Room.Leave(p)
 	}
 	delete(ActivePlayers,p.AuthToken)
 	ActivePlayersCount = len(ActivePlayers)
@@ -49,19 +90,19 @@ func (p *Player) Attack(target *Npc) {
 }
 
 func (p *Player) Pickup(entry string) bool {
-	item := p.GameState.CurrentLocation.Items.Get(entry)
+	item := p.Room.CurrentLocation.Items.Get(entry)
 	if(item != nil) {
 		var weight float64 = item.Attributes.Weight
 		for _, invItem := range p.Inventory {
 			weight += invItem.Attributes.Weight
 		}
 		if(weight <= 1.0) {
-			p.GameState.CurrentLocation.Items.Remove(item)
+			p.Room.CurrentLocation.Items.Remove(item)
 			p.Inventory.Add(item)
-			p.GameState.Tell("You picked up "+item.Attributes.Name+" from ground",p)
-			p.GameState.TellAllExcept(p.Name+" picked up "+item.Attributes.Name+" from ground",p)
+			p.Room.Tell("You picked up "+item.Attributes.Name+" from ground",p)
+			p.Room.TellAllExcept(p.Name+" picked up "+item.Attributes.Name+" from ground",p)
 		} else {
-			p.GameState.Tell("You cannot keep more items in inventory",p)
+			p.Room.Tell("You cannot keep more items in inventory",p)
 		}
 		return true
 	}
@@ -83,7 +124,7 @@ func (p *Player) Use(entry string) bool {
 func (p *Player) Drop(entry string) bool {
 	item := p.Inventory.Get(entry)
 	if(item != nil) {
-		p.GameState.CurrentLocation.Items.Add(item)
+		p.Room.CurrentLocation.Items.Add(item)
 		p.Inventory.Remove(item)
 		return true
 	}
@@ -113,4 +154,20 @@ func (p *Player) Damage(value int64) {
 	if(p.Health <= 0) {
 		p.Health = 0
 	}
+}
+
+func PlayerByAuthorization(r *http.Request) (*Player,bool) {
+	//Authentication
+	authToken, found := r.Header["Authorization"]
+	if(!found) {
+		return nil, false
+	}
+
+	//Search for player in state
+	player, active := ActivePlayers[authToken[0]]
+	if(!active) {
+		return nil, false
+	}
+
+	return player, true
 }

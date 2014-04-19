@@ -21,10 +21,10 @@ type ActionRequirement struct {
 	ErrorMessage string 		`json:"error_msg"`
 }
 
-func (action *Action) Do(state *GameState, player *Player) {
+func (action *Action) Do(room *Room, player *Player) {
 	entry, found := ActionsDirectory[action.Action]
 	if(found) {
-		entry(state,player,action.Config)
+		entry(room,player,action.Config)
 	}
 }
 
@@ -47,10 +47,10 @@ type Location struct {
 	Visited bool					`json:"visited"`
 }
 
-func (loc *Location) DoAction(state *GameState, player *Player, actionName string) {
+func (loc *Location) DoAction(room *Room, player *Player, actionName string) {
 	for index, action := range loc.Actions {
 		if(action.Id == actionName) {
-			state.DoAction(player,&loc.Actions[index])
+			room.DoAction(player,&loc.Actions[index])
 		}
 	}
 }
