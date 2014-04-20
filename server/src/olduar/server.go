@@ -136,6 +136,71 @@ func Run(configFilename string) {
 					player.Room.queue <- &command
 					w.Write(<- resp)
 
+				case "players":
+					playerList := make([]string,len(ActivePlayersByUsername))
+					playerId := 0
+					for username := range ActivePlayersByUsername {
+						playerList[playerId] = username
+						playerId++
+					}
+					data, err := json.Marshal(playerList)
+					if(err == nil) {
+						w.Write(data)
+					} else {
+						w.Write([]byte("[]"))
+					}
+
+				case "tell":
+					if(paramLen == 2 && params[1] != "") {
+						target, found := ActivePlayersByUsername[strings.ToLower(params[1])]
+						if(found && target.Room != nil) {
+							defer r.Body.Close()
+							messageData, err := ioutil.ReadAll(r.Body);
+							message := string(messageData)
+							if(err != nil || message == "") {
+								w.Write([]byte("false"))
+							} else {
+								target.Room.Tell(player.Name +" ("+player.Username+"): "+message,target)
+								w.Write([]byte("true"))
+							}
+						} else {
+							w.Write([]byte("false"))
+						}
+					} else {
+						w.Write([]byte("false"))
+					}
+
+				case "say":
+					if(player.Room != nil) {
+						defer r.Body.Close()
+						messageData, err := ioutil.ReadAll(r.Body);
+						message := string(messageData)
+						if(err != nil || message == "") {
+							w.Write([]byte("false"))
+						} else {
+							player.Room.TellAll(player.Name +": "+message)
+							w.Write([]byte("true"))
+						}
+					} else {
+						w.Write([]byte("false"))
+					}
+
+				case "party":
+					if(player.Room != nil) {
+						playerList := make([]string,len(player.Room.Players))
+						for index, player := range player.Room.Players {
+							playerList[index] = player.Username
+						}
+						data, err := json.Marshal(playerList)
+						if(err == nil) {
+							w.Write(data)
+						} else {
+							w.Write([]byte("[]"))
+						}
+					} else {
+						w.Write([]byte("[]"))
+					}
+
 				case "rename":
 
 					defer r.Body.Close()

@@ -86,9 +86,7 @@ Returns description of object or __null__ if __{item}__ is not available on grou
 *Attributes and other properties will be added over time*
 
 ### GET /api/party
-*TBA*
-
-Returns list of players in room
+Returns list of players in room, if player is not joined to a room `[]`(empty array) is returned
 ```json
 [
     "Belzebub",
@@ -96,11 +94,8 @@ Returns list of players in room
     "Kain"
 ]
 ```
-*Attributes and other properties will be added over time*
 
-### POST /api/room/say
-*TBA*
-
+### POST /api/say
 Everything in __POST body__ is used as is and sent to all players as message
 
 If player is not connected to any room __false__ is returned, otherwise __true__
@@ -139,8 +134,6 @@ Returns list of rooms available (only visible rooms are listed)
 ```
 
 ### GET /api/players
-*TBA*
-
 Returns list of all active players
 ```json
 [
@@ -149,11 +142,8 @@ Returns list of all active players
     "Kain"
 ]
 ```
-*Attributes and other properties will be added over time*
 
 ### POST /api/tell/{player}
-*TBA*
-
 Everything in __POST body__ is used as is and sent to __{player}__ as message
 
 If __{player}__ is not connected __false__ is returned, otherwise __true__
