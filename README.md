@@ -33,27 +33,27 @@ Returns current location view (together with items, npcs, exits and actions)
 }
 ```
 
-### GET /api/go/{direction}
+### POST /api/go/{direction}
 Invalid __{direction}__ is ignored
 
 Return is the same as `/look`
 
-### GET /api/do/{action}
+### POST /api/do/{action}
 Invalid __{action}__ is ignored
 
 Return is the same as `/look`
 
-### GET /api/pickup/{item}
+### POST /api/pickup/{item}
 If invalid __{item}__ is specified or __{item}__ is not on ground, __null__ is returned
 
 Otherwise return is the same as `/look`
 
-### GET /api/drop/{item}
+### POST /api/drop/{item}
 If invalid __{item}__ is specified or __{item}__ is not in player's inventory, __null__ is returned
 
 Otherwise return is the same as `/look`
 
-### GET /api/use/{item}
+### POST /api/use/{item}
 If invalid __{item}__ is specified __null__ is returned
 
 Otherwise return is the same as `/look`
@@ -75,7 +75,7 @@ Returns array of items in player's inventory
 ]
 ```
 
-### GET /api/inspect/{item}
+### POST /api/inspect/{item}
 Returns description of object or __null__ if __{item}__ is not available on ground or in inventory
 ```json
 {
