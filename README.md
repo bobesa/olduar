@@ -75,7 +75,7 @@ Returns array of items in player's inventory
 ]
 ```
 
-### POST /api/inspect/{item}
+### GET /api/inspect/{item}
 Returns description of object or __null__ if __{item}__ is not available on ground or in inventory
 ```json
 {
