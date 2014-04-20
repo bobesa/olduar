@@ -1,6 +1,8 @@
 {
     "port":"8080",
-    "name":"OLDUAR Server",
+    "name":"My Olduar Server",
+
+	"directory_save":"save",
 
     "directory_items":"db/items",
     "directory_locations":"db/locations",

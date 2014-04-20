@@ -9,11 +9,11 @@ import (
 
 // Loader for location templates
 
-func LoadLocations(path string) bool {
+func LoadLocations() bool {
 
-	files, err := ioutil.ReadDir(path);
+	files, err := ioutil.ReadDir(MainServerConfig.DirLocations);
 	if(err != nil) {
-		fmt.Println("Unable to load locations from \""+path+"\"")
+		fmt.Println("Unable to load locations from \""+MainServerConfig.DirLocations+"\"")
 		return false
 	}
 
@@ -26,7 +26,7 @@ func LoadLocations(path string) bool {
 	//Load locations
 	fmt.Println("Loading location files:")
 	for _, file := range files {
-		data, err := ioutil.ReadFile(path+"/"+file.Name());
+		data, err := ioutil.ReadFile(MainServerConfig.DirLocations+"/"+file.Name());
 		if(err == nil) {
 			region := LoadingRegion{}
 			err := json.Unmarshal(data,&region)

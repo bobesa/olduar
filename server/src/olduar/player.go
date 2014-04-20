@@ -35,16 +35,16 @@ type Player struct {
 	LastResponse time.Time	`json:"-"`
 }
 
-func LoadAllPlayers(path string) {
-	files, err := ioutil.ReadDir(path);
+func LoadAllPlayers() {
+	files, err := ioutil.ReadDir(MainServerConfig.DirSave+"/players");
 	if(err == nil) {
 		for _, file := range files {
 			player := &Player{}
-			player.Load(path + file.Name())
+			player.Load(MainServerConfig.DirSave+"/players/" + file.Name())
 		}
 		fmt.Println("Loaded",len(ActivePlayers),"players")
 	} else {
-		fmt.Println("Unable to load players \"save/players\"")
+		fmt.Println("Unable to load players \""+MainServerConfig.DirSave+"/players\"")
 	}
 }
 
@@ -65,7 +65,7 @@ func (player *Player) Load(filename string) {
 func (player *Player) Save() {
 	data, err := json.Marshal(player)
 	if(err == nil) {
-		err = ioutil.WriteFile("save/players/"+player.Username+".json", data, 0644)
+		err = ioutil.WriteFile(MainServerConfig.DirSave+"/players/"+player.Username+".json", data, 0777)
 		if(err != nil) {
 			fmt.Println("Failed to save player \""+player.Username+"\":",err)
 		} else {

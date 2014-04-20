@@ -20,18 +20,18 @@ const (
 
 // Loader for item templates
 
-func LoadItems(path string) bool {
+func LoadItems() bool {
 
-	files, err := ioutil.ReadDir(path);
+	files, err := ioutil.ReadDir(MainServerConfig.DirItems);
 	if(err != nil) {
-		fmt.Println("Unable to load items from \""+path+"\"")
+		fmt.Println("Unable to load items from \""+MainServerConfig.DirItems+"\"")
 		return false
 	}
 
 	//Load locations
 	fmt.Println("Loading item files:")
 	for _, file := range files {
-		data, err := ioutil.ReadFile(path+"/"+file.Name());
+		data, err := ioutil.ReadFile(MainServerConfig.DirItems+"/"+file.Name());
 		if(err == nil) {
 			items := make(ItemTemplates,0)
 			err := json.Unmarshal(data,&items)

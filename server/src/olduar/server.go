@@ -1,6 +1,7 @@
 package olduar
 
 import (
+	"os"
 	"fmt"
 	"math/rand"
 	"time"
@@ -12,12 +13,14 @@ import (
 )
 
 const (
-	VERSION = "0.01a"
+	VERSION = "0.0.2"
 )
 
 type ServerConfig struct {
 	Port string				`json:"port"`
 	Name string				`json:"name"`
+
+	DirSave string			`json:"directory_save"`
 
 	DirItems string			`json:"directory_items"`
 	DirLocations string		`json:"directory_locations"`
@@ -26,6 +29,7 @@ type ServerConfig struct {
 
 var MainServerMux *http.ServeMux
 var MainServerInstance *http.Server
+var MainServerConfig *ServerConfig = &ServerConfig{}
 
 func UsernameCheck(username string) bool {
 	return strings.IndexAny(username," :") == -1
@@ -40,8 +44,7 @@ func Run(configFilename string) {
 		fmt.Println("Unable to open \""+configFilename+"\" config file")
 		return
 	}
-	config := ServerConfig{}
-	err = json.Unmarshal(data,&config)
+	err = json.Unmarshal(data,&MainServerConfig)
 
 	if(err != nil) {
 		fmt.Println("Error in \""+configFilename+"\" config file")
@@ -52,17 +55,24 @@ func Run(configFilename string) {
 	rand.Seed(time.Now().Unix())
 
 	//Loading of files etc.
-	if(LoadLocations(config.DirLocations) && LoadItems(config.DirItems)) {
+	if(LoadLocations() && LoadItems()) {
+		//Initialize actions
 		InitializeActions()
-		LoadAllPlayers("./save/players/")
 
-		fmt.Println("Everything is prepared, \""+config.Name+"\" is running")
+		//Prepare folders if not existing
+		os.MkdirAll(MainServerConfig.DirSave+"/players",0777)
+		os.MkdirAll(MainServerConfig.DirSave+"/rooms",0777)
+
+		//Load all players
+		LoadAllPlayers()
+
+		fmt.Println("Everything is prepared, \""+MainServerConfig.Name+"\" is running")
 		fmt.Println()
 
 		//Prepare server
 		MainServerMux = http.NewServeMux()
 		MainServerInstance = &http.Server{
-			Addr:           ":"+config.Port,
+			Addr:           ":"+MainServerConfig.Port,
 			Handler:        MainServerMux,
 			ReadTimeout:    10 * time.Second,
 			WriteTimeout:   10 * time.Second,
