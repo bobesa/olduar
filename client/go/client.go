@@ -55,7 +55,7 @@ func (inventory Inventory) Print() {
 	if(len(inventory) > 0) {
 		fmt.Println(formatBold("Your inventory"))
 		for _, item := range inventory {
-			fmt.Println(formatCommand(item.Id)+": "+item.Name+" ("+item.Description+")")
+			fmt.Println(item.Name+" ("+formatCommand(item.Id)+") "+formatInfo(item.Description))
 		}
 	} else {
 		fmt.Println(formatBold("Your inventory is empty"))
@@ -76,7 +76,7 @@ func (item *ItemDetail) Print() {
 	}
 }
 
-type State struct {
+type Room struct {
 	Name string 				`json:"name"`
 	Description string 			`json:"desc"`
 	History []*Message	 		`json:"history"`
@@ -85,28 +85,28 @@ type State struct {
 	Items Inventory				`json:"items"`
 }
 
-func (state *State) Print() {
+func (room *Room) Print() {
 	//History events
-	if(len(state.History)>0) {
-		for _, event := range state.History {
+	if(len(room.History)>0) {
+		for _, event := range room.History {
 			fmt.Println(event.Message)
 		}
 		PrintLine()
 	}
 
 	//Location info
-	fmt.Println(formatBold(state.Name))
-	fmt.Println(formatInfo(state.Description))
+	fmt.Println(formatBold(room.Name))
+	fmt.Println(formatInfo(room.Description))
 
 	//Items
-	count := len(state.Items)
+	count := len(room.Items)
 	if(count > 0) {
 		if(count == 1) {
 			fmt.Print("Item on ground: ")
 		} else {
 			fmt.Print("Items on ground: ")
 		}
-		for index, item := range state.Items {
+		for index, item := range room.Items {
 			fmt.Print(formatCommand(item.Id)+" ("+item.Name+")")
 			if(count-2 == index) {
 				fmt.Print(" & ")
@@ -118,7 +118,7 @@ func (state *State) Print() {
 	}
 
 	//Actions
-	count = len(state.Actions)
+	count = len(room.Actions)
 	if(count > 0) {
 		if(count == 1) {
 			fmt.Print("There is only 1 action: ")
@@ -126,7 +126,7 @@ func (state *State) Print() {
 			fmt.Print("Possible actions are: ")
 		}
 		actionId := 0
-		for action, desc := range state.Actions {
+		for action, desc := range room.Actions {
 			fmt.Print(formatCommand(action)+" ("+desc+")")
 			if(count-2 == actionId) {
 				fmt.Print(" & ")
@@ -139,7 +139,7 @@ func (state *State) Print() {
 	}
 
 	//Exits
-	count = len(state.Exits)
+	count = len(room.Exits)
 	if(count > 0) {
 		if(count == 1) {
 			fmt.Print("There is only 1 exit: ")
@@ -147,7 +147,7 @@ func (state *State) Print() {
 			fmt.Print("Directions are: ")
 		}
 		exitId := 0
-		for command, desc := range state.Exits {
+		for command, desc := range room.Exits {
 			fmt.Print(formatCommand(command)+" ("+desc+")")
 			if(count-2 == exitId) {
 				fmt.Print(" & ")
@@ -163,7 +163,8 @@ func (state *State) Print() {
 }
 
 func RequireAuth() {
-	fmt.Println(formatBoldColor("Wrong Username or Password",COLOR_RED))
+	fmt.Println(formatBoldColor("Wrong Username (",COLOR_RED)+formatBold(Username)+formatBoldColor(") or Password ",COLOR_RED)+" ("+formatInfo("enter same credentials again to register new user")+")")
+	oUser, oPass := Username, Password
 	Username, Password = "", ""
 	for(Username == "") {
 		fmt.Print(formatBold("Enter Username:")+" \033[32m")
@@ -175,10 +176,27 @@ func RequireAuth() {
 		fmt.Scanln(&Password)
 		fmt.Print("\033[0m")
 	}
+
+	//Handle registration
+	if(Password == oPass && Username == oUser) {
+		if(string(Fetch("POST","register","")) != "true") {
+			fmt.Println(formatBoldColor("Username is invalid or already taken. Please try again.",COLOR_RED))
+			PrintLine()
+			RequireAuth()
+		} else {
+			fmt.Println(formatBoldColor("Registration was successful.",COLOR_GREEN))
+		}
+	}
+
 	PrintLine()
 }
 
-func Fetch(command string, param string) []byte {
+
+func Fetch(method string, command string, param string) []byte {
+	return FetchWithBody(method,command,param,"")
+}
+
+func FetchWithBody(method string, command string, param string, body string) []byte {
 	//Check for param
 	if(param != "") {
 		command = command +"/"
@@ -186,27 +204,27 @@ func Fetch(command string, param string) []byte {
 
 	//Do the request
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", SERVER+"/"+GAME+"/"+command+param, nil)
+	req, err := http.NewRequest(method, SERVER+"/api/"+command+param, strings.NewReader(body))
 	req.SetBasicAuth(Username, Password)
 	resp, err := client.Do(req)
 	if(err != nil) {
 		fmt.Println(formatBoldColor("Network issue: Retrying in 5 seconds",COLOR_RED))
 		time.Sleep(time.Second*5)
-		return Fetch(command,param)
+		return FetchWithBody(method,command,param,body)
 	}
 
 	if(resp.StatusCode == 404) {
 		RequireAuth()
-		return Fetch(command,param)
+		return FetchWithBody(method,command,param,body)
 	}
 
 	//Read body
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	data, err := ioutil.ReadAll(resp.Body)
 	if(err != nil) {
 		return nil
 	}
-	return body
+	return data
 }
 
 func PrintLine() {
@@ -214,37 +232,46 @@ func PrintLine() {
 }
 
 func PrintHelp() {
-	fmt.Println("\t"+formatCommand("help")+" \t\t\t\t List of available commands")
-	fmt.Println("\t"+formatCommand("look")+" \t\t\t\t See current location description etc.")
-	fmt.Println("\t"+formatCommand("go")+" [direction] \t\t Walk to a new place (example: "+formatInfo("go west")+")")
-	fmt.Println("\t"+formatCommand("do")+" [task] \t\t\t Do action (example: "+formatInfo("do drink")+")")
-	fmt.Println("\t"+formatCommand("inventory")+" \t\t\t See your inventory")
-	fmt.Println("\t"+formatCommand("pickup")+" [item] \t\t Pickup object on ground (example: "+formatInfo("pickup shield")+")")
-	fmt.Println("\t"+formatCommand("drop")+" [item] \t\t Drop object from inventory on ground (example: "+formatInfo("drop axe")+")")
-	//fmt.Println("\tequip [item] \t\t Equip item from inventory (example: equip sword)")
-	fmt.Println("\t"+formatCommand("inspect")+" [item] \t\t Displays complete info about item (example: "+formatInfo("inspect fishing_pole")+")")
-	//fmt.Println("\tsay [message] \t\t Send message to party (example: say Hello guys)")
+	fmt.Println("\t"+formatCommand("help")+" \t\t\t\t\t\t List of available commands")
+	fmt.Println("\t"+formatCommand("look")+" \t\t\t\t\t\t See current location description etc.")
+	fmt.Println("\t"+formatCommand("go")+" [direction] \t\t\t\t Walk to a new place (example: "+formatInfo("go west")+")")
+	fmt.Println("\t"+formatCommand("do")+" [task] \t\t\t\t\t Do action (example: "+formatInfo("do drink")+")")
+	fmt.Println("\t"+formatCommand("inventory")+" \t\t\t\t\t See your inventory")
+	fmt.Println("\t"+formatCommand("pickup")+" [item] \t\t\t\t Pickup object on ground (example: "+formatInfo("pickup shield")+")")
+	fmt.Println("\t"+formatCommand("drop")+" [item] \t\t\t\t Drop object from inventory on ground (example: "+formatInfo("drop axe")+")")
+	fmt.Println("\t"+formatCommand("inspect")+" [item] \t\t\t\t Displays complete info about item (example: "+formatInfo("inspect fishing_pole")+")")
+	fmt.Println("\t"+formatCommand("tell")+" [player] [message] \t Send message to player (example: "+formatInfo("tell noam Hi!")+")")
+	fmt.Println("\t"+formatCommand("say")+" [message] \t\t\t\t Send message to party (example: "+formatInfo("say Hello guys")+")")
+	fmt.Println("\t"+formatCommand("rename")+" [name] \t\t\t\t Rename yourself to new name (example: "+formatInfo("rename Bugmaster3000")+")")
+	fmt.Println("\t"+formatCommand("join")+" [room] \t\t\t\t Join a room (example: "+formatInfo("join room_of_horrors")+")")
+	fmt.Println("\t"+formatCommand("leave")+" \t\t\t\t\t\t Leave current room")
+	fmt.Println("\t"+formatCommand("rooms")+" \t\t\t\t\t\t Show list of rooms on server")
+	fmt.Println("\t"+formatCommand("players")+" \t\t\t\t\t Show list of players on server")
+	fmt.Println("\t"+formatCommand("party")+" \t\t\t\t\t\t Show list of current players in your party")
 }
 
-func Process(command string, param string) {
+func Process(command string, param string, param2 string) {
+	if(command == "") {
+		return
+	}
 	PrintLine()
 	switch(command){
 	case "inventory":
 		inventory := Inventory{}
-		json.Unmarshal(Fetch(command,param),&inventory)
+		json.Unmarshal(Fetch("GET",command,param),&inventory)
 		inventory.Print()
 
 	case "inspect":
 		var item *ItemDetail = nil
-		json.Unmarshal(Fetch(command,param),&item)
+		json.Unmarshal(Fetch("GET",command,param),&item)
 		item.Print()
 
 	case "pickup", "drop", "use":
 		if(param != "") {
-			var state *State = nil
-			json.Unmarshal(Fetch(command,param),&state)
-			if(state != nil) {
-				state.Print()
+			var room *Room = nil
+			json.Unmarshal(Fetch("POST",command,param),&room)
+			if(room != nil) {
+				room.Print()
 			} else {
 				fmt.Print(formatBold("You cannot " + command + " ") + formatCommand(param))
 				if(command == "pickup") {
@@ -257,13 +284,79 @@ func Process(command string, param string) {
 			fmt.Println(formatBold("You need to say what you want to " + command))
 		}
 
-	case "do", "go", "look":
-		var state *State = nil
-		json.Unmarshal(Fetch(command,param),&state)
-		if(state != nil) {
-			state.Print()
+	case "rename": //POST "rename" postbody name
+		if(param != "") {
+			FetchWithBody("POST",command,"",param)
 		} else {
-			fmt.Println(formatBold("Something went wrong"))
+			fmt.Println(formatBold("You need to enter a new name!"))
+		}
+
+	case "join": //POST "join/{room}"
+		var room *Room = nil
+		json.Unmarshal(Fetch("POST",command,param),&room)
+		if(room == nil) {
+			fmt.Println(formatBold("You cannot create this room, maximum amount of rooms reached."))
+		} else {
+			room.Print()
+		}
+
+	case "tell":
+		if(string(FetchWithBody("POST",command,param,param2)) != "true") {
+			fmt.Println(formatBoldColor("Player "+param+" could not get your message",COLOR_RED))
+		}
+
+	case "say":
+		if(string(FetchWithBody("POST",command,"",param)) != "true") {
+			fmt.Println(formatBoldColor("Sending of message failed",COLOR_RED))
+		}
+
+	case "leave":
+		if(strings.Index(string(Fetch("POST",command,param)),"[") == 0) {
+			fmt.Println(formatBold("You have left the room"))
+		} else {
+			fmt.Println(formatBold("You cannot leave the room right now"))
+		}
+
+	case "rooms", "players", "party":
+		list := []string{}
+		json.Unmarshal(Fetch("GET",command,param),&list)
+		switch(command){
+		case "rooms","leave":
+			if(len(list) == 0) {
+				fmt.Println(formatBold("No rooms are currently active"))
+			} else {
+				fmt.Println(formatBold("List of active rooms"))
+			}
+		case "players":
+			if(len(list) == 0) {
+				fmt.Println(formatBold("No players are currently playing"))
+			} else {
+				fmt.Println(formatBold("List of players currently playing"))
+			}
+		case "party":
+			if(len(list) == 0) {
+				fmt.Println(formatBold("No players are in your party"))
+			} else {
+				fmt.Println(formatBold("List of players in your party"))
+			}
+		}
+		for _, entry := range list {
+			fmt.Println(formatBold("- ")+formatCommand(entry))
+		}
+
+	case "do", "go", "look":
+		var room *Room = nil
+		method := "POST"
+		if(command == "look") {
+			method = "GET"
+		}
+		json.Unmarshal(Fetch(method,command,param),&room)
+		if(room != nil) {
+			room.Print()
+		} else {
+			fmt.Println(formatBold("You need to join the room first!"));
+			fmt.Println(formatBold("Type \"")+formatCommand("rooms")+formatBold("\" to get the list of rooms you can join."))
+			fmt.Println(formatBold("Type \"")+formatCommand("join ")+formatBoldColor("{name of room}",COLOR_PURPLE)+formatBold("\" to join selected room, or create unexisting room with ")+formatBoldColor("{name of room}",COLOR_PURPLE)+formatBold("."))
 		}
 
 	case "help":
@@ -308,12 +401,12 @@ func main() {
 		Password = os.Args[2]
 	}
 
-	Process("look","")
+	Process("look","","")
 	for {
-		command, param := "", ""
+		command, param1, param2 := "", "", ""
 		fmt.Print("> \033[32m")
-		fmt.Scanln(&command,&param)
+		fmt.Scanln(&command,&param1,&param2)
 		fmt.Print("\033[0m")
-		Process(strings.ToLower(command),strings.ToLower(param))
+		Process(strings.ToLower(command),param1,param2)
 	}
 }
