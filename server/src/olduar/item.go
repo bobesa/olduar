@@ -175,6 +175,17 @@ type Item struct {
 	Equipped bool					`json:"equipped"`
 }
 
+func (item *Item) Load() bool {
+	if(item.Attributes == nil) {
+		attr, found := ItemTemplateDirectory[item.Id]
+		if(found) {
+			item.Attributes = attr
+		}
+		return found
+	}
+	return true
+}
+
 func (item *Item) GenerateResponse() ResponseItem {
 	return ResponseItem{
 		Id: &item.Id,

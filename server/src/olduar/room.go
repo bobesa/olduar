@@ -26,9 +26,11 @@ func GetRoomList() []string {
 func CreateRoomWithName(name string) *Room {
 	room := CreateRoomFromSave(name+".json")
 	if(room == nil) {
+		loc := CreateLocationFromRegion("start")
 		room = &Room{
 			Id: name,
-			CurrentLocation: CreateLocationFromRegion("start"),
+			CurrentLocation: loc,
+			StartingLocation: loc,
 			Players: make(Players,0),
 		}
 		room.CurrentLocation.Visit()
@@ -100,7 +102,8 @@ type Rooms []*Room
 
 type Room struct {
 	Id string 					`json:"id"`
-	CurrentLocation *Location 	`json:"location"`
+	CurrentLocation *Location 	`json:"-"`
+	StartingLocation *Location 	`json:"location"`
 	Players Players				`json:"-"`
 	History MessageObjects		`json:"-"`
 	LastMessageId int64			`json:"message_count"`
@@ -111,7 +114,6 @@ type Room struct {
 }
 
 func (room *Room) Save() {
-	return //TODO: Fix recursion
 	data, err := json.Marshal(room)
 	if(err == nil) {
 		err = ioutil.WriteFile("save/rooms/"+room.Id+".json", data, 0644)
@@ -125,9 +127,30 @@ func (room *Room) Save() {
 	}
 }
 
+func (room *Room) cycleLocations(location *Location) {
+	//Items
+	for _, item := range location.Items {
+		item.Load()
+	}
+
+	//Check location
+	if(location.Current) {
+		room.CurrentLocation = location
+	}
+	for _, exit := range location.Exits {
+		exit.Target.Parent = location
+		room.cycleLocations(exit.Target)
+	}
+}
+
 func (room *Room) Prepare() {
 	//Put room to list of rooms
 	AllRooms[room.Id] = room
+
+	//Check for current location
+	if(room.CurrentLocation == nil) {
+		room.cycleLocations(room.StartingLocation)
+	}
 
 	//Prepare variables
 	room.queue = make(chan *Command,0)
@@ -247,6 +270,9 @@ func (room *Room) GetPlayerResponse(player *Player) []byte {
 	for _, exit := range room.CurrentLocation.Exits {
 		res.Exits[exit.Id] = exit.Target.DescriptionShort
 	}
+	if(room.CurrentLocation.Parent != nil) {
+		res.Exits["back"] = room.CurrentLocation.Parent.DescriptionShort
+	}
 
 	//Append actions
 	for _, action := range room.CurrentLocation.Actions {
@@ -319,13 +345,9 @@ func (room *Room) Travel(location *Location) {
 
 	//Add "back" exit if location was not visited before
 	if(location.Visit()) {
-		location.Exits = append(
-			location.Exits,
-			LocationExit{
-				Id:"back",
-				Target: room.CurrentLocation,
-			},
-		)
+		room.CurrentLocation.Current = false;
+		location.Current = true;
+		location.Parent = room.CurrentLocation
 	}
 
 	//Set new location
@@ -371,9 +393,14 @@ func (room *Room) CheckVoting() {
 func (room *Room) GoTo(way string, player *Player) {
 	oldLocation := room.CurrentLocation
 	var newLocation *Location = nil
-	for _, exit := range oldLocation.Exits {
-		if(exit.Id == way) {
-			newLocation = exit.Target
+
+	if(way == "back") {
+		newLocation = room.CurrentLocation.Parent
+	} else {
+		for _, exit := range oldLocation.Exits {
+			if(exit.Id == way) {
+				newLocation = exit.Target
+			}
 		}
 	}
 

@@ -53,6 +53,10 @@ func (player *Player) Load(filename string) {
 	if(err == nil) {
 		err := json.Unmarshal(data, player)
 		if(err == nil) {
+			//Items
+			for _, item := range player.Inventory {
+				item.Load()
+			}
 			player.Activate()
 		}
 	}

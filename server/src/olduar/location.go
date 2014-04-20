@@ -45,6 +45,8 @@ type Location struct {
 	Actions Actions					`json:"actions,omitempty"`
 	Items Inventory					`json:"items,omitempty"`
 	Visited bool					`json:"visited"`
+	Current bool					`json:"current"`
+	Parent *Location				`json:"-"`
 }
 
 func (loc *Location) DoAction(room *Room, player *Player, actionName string) {
@@ -56,6 +58,7 @@ func (loc *Location) DoAction(room *Room, player *Player, actionName string) {
 }
 
 func (loc *Location) Visit() bool {
+	loc.Current = true;
 
 	if(len(loc.Exits)==0) {
 		//No exits? Generate exits
