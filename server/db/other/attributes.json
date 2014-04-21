@@ -1,0 +1,84 @@
+[
+	{
+		"id":"damage",
+		"name":"Damage",
+		"desc":"Basic damage",
+		"type":"damage",
+		"groups":[1],
+		"config":{
+			"msg":"%target% got hit for %damage% damage"
+		}
+	},
+	{
+		"id":"fire_damage",
+		"name":"Fire Damage",
+		"desc":"Damage caused by fire",
+		"type":"damage",
+		"groups":[2],
+		"config":{
+			"msg":"%target% got burnt for %damage% damage"
+		}
+	},
+
+	{
+		"id":"defense",
+		"name":"Defense",
+		"desc":"Basic defense",
+		"type":"resistance",
+		"groups":[1],
+		"config":{
+			"msg":"%target% defended %value% damage"
+		}
+	},
+	{
+		"id":"fire_res",
+		"name":"Fire resistance",
+		"desc":"Resistance against fire",
+		"type":"resistance",
+		"groups":[2],
+		"config":{
+			"msg":"%target% resisted %value% damage"
+		}
+	},
+	{
+		"id":"life_steal_res",
+		"name":"Life-steal resistance",
+		"desc":"Resistance against life-steal",
+		"type":"resistance",
+		"groups":[1],
+		"config":{
+			"msg":"%target% defended %value% damage"
+		}
+	},
+
+	{
+		"id":"fire_power",
+		"name":"Fire power",
+		"desc":"Enhancing power for fire damage (25%) and abilities (100%)",
+		"type":"damage-mod",
+		"groups":[2],
+		"config":{
+			"damage":0.25
+		}
+	},
+	{
+		"id":"life_steal",
+		"name":"Life-steal",
+		"desc":"Ability to steal life (25%) upon attack",
+		"type":"damage-mod",
+		"config":{
+			"msg":"%damage% health got stolen from %target%",
+			"heal":0.25
+		}
+	},
+
+    {
+        "id":"healing_power",
+        "name":"Healing power",
+        "desc":"Power to heal your allies",
+        "type":"attribute",
+        "config":{
+            "msg":"%target% got healed for %value% health"
+        }
+    }
+]
