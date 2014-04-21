@@ -78,10 +78,22 @@ func CreateLocationFromTemplate(template *LocationTemplate) *Location {
 	loc.Name = template.Name
 	loc.Description = template.Description
 	loc.DescriptionShort = template.DescriptionShort
-	loc.Actions = template.Actions
 	loc.Exits = template.Exits
 	loc.Region = template.Region
 	loc.Visited = false
+
+	//Cycle trough actions and create map
+	loc.Actions = make(map[string]*Action)
+	for _, action := range template.Actions {
+		loc.Actions[action.Id] = &Action{
+			Id: action.Id,
+			Description: action.Description,
+			Action: action.Action,
+			Charges: action.Charges,
+			Config: action.Config,
+			Requirements: action.Requirements,
+		}
+	}
 
 	//Generate items on ground
 	loc.Items = make(Inventory,0)

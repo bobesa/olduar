@@ -129,8 +129,19 @@ func (room *Room) Save() {
 
 func (room *Room) cycleLocations(location *Location) {
 	//Items
-	for _, item := range location.Items {
-		item.Load()
+	if(location.Items != nil) {
+		for _, item := range location.Items {
+			item.Load()
+		}
+	}
+
+	//Actions
+	if(location.Items != nil) {
+		for actionId, action := range location.Actions {
+			if (!action.Prepare()) {
+				delete(location.Actions, actionId)
+			}
+		}
 	}
 
 	//Check location
@@ -316,20 +327,6 @@ func (room *Room) DoAction(player *Player, action *Action) {
 
 	//Do actual action
 	action.Do(room,player)
-
-	//Messages
-	message, found := action.Config["msg_player"]
-	if(found) {
-		room.Tell(AppendVariablesToString(message.(string),player,action.Config),player)
-	}
-	message, found = action.Config["msg_party"]
-	if(found) {
-		room.TellAllExcept(AppendVariablesToString(message.(string),player,action.Config),player)
-	}
-	message, found = action.Config["msg"]
-	if(found) {
-		room.TellAll(AppendVariablesToString(message.(string),player,action.Config))
-	}
 }
 
 func (room *Room) Travel(location *Location) {

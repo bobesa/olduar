@@ -4,30 +4,6 @@ import (
 	"math/rand"
 )
 
-type Actions []Action
-type Action struct {
-	Id string							`json:"id"`
-	Description string					`json:"desc,omitempty"`
-	Action string						`json:"action"`
-	Charges int							`json:"charges"`
-	Config map[string]interface{}		`json:"config,omitempty"`
-	Requirements ActionRequirements		`json:"requirements"`
-}
-
-type ActionRequirements []*ActionRequirement
-type ActionRequirement struct {
-	Type string 				`json:"type"`
-	Value string 				`json:"value"`
-	ErrorMessage string 		`json:"error_msg"`
-}
-
-func (action *Action) Do(room *Room, player *Player) {
-	entry, found := ActionsDirectory[action.Action]
-	if(found) {
-		entry(room,player,action.Config)
-	}
-}
-
 type LocationExits []LocationExit
 type LocationExit struct{
 	Id string						`json:"id"`
@@ -42,7 +18,7 @@ type Location struct {
 	Description string 				`json:"desc"`
 	DescriptionShort string 		`json:"desc_short"`
 	Exits LocationExits 			`json:"exits"`
-	Actions Actions					`json:"actions,omitempty"`
+	Actions map[string]*Action		`json:"actions,omitempty"`
 	Items Inventory					`json:"items,omitempty"`
 	Visited bool					`json:"visited"`
 	Current bool					`json:"current"`
@@ -50,10 +26,9 @@ type Location struct {
 }
 
 func (loc *Location) DoAction(room *Room, player *Player, actionName string) {
-	for index, action := range loc.Actions {
-		if(action.Id == actionName) {
-			room.DoAction(player,&loc.Actions[index])
-		}
+	action, found := loc.Actions[actionName]
+	if(found) {
+		room.DoAction(player,action)
 	}
 }
 

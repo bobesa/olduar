@@ -3,9 +3,70 @@ package olduar
 import (
 	"strings"
 	"fmt"
+	"encoding/json"
 )
 
-type ActionFunction func (room *Room, player *Player, config map[string]interface{})
+type Actions []Action
+type Action struct {
+	Id string							`json:"id,omitempty"`
+	Description string					`json:"desc,omitempty"`
+	Action string						`json:"action"`
+	Charges int							`json:"charges,omitempty"`
+	Config map[string]interface{}		`json:"config,omitempty"`
+	Requirements ActionRequirements		`json:"requirements,omitempty"`
+
+	worker Actioner
+}
+
+func (a *Action) Prepare() bool {
+	if(a.worker == nil) {
+		data, err := json.Marshal(a.Config)
+		if(err == nil) {
+			switch(a.Action) {
+			case "message":
+				a.worker = new(ActionTypeMessage)
+			case "location":
+				a.worker = new(ActionTypeLocation)
+			case "effect":
+				a.worker = new(ActionTypeEffect)
+			case "give":
+				a.worker = new(ActionTypeGive)
+			default:
+				return false
+			}
+			err = json.Unmarshal(data,&a.worker)
+			if(err != nil || a.worker.Prepare()) {
+				return false
+			}
+		} else {
+			return false
+		}
+	}
+	return true
+}
+
+func (action *Action) Do(room *Room, player *Player) {
+	if(action.worker == nil) {
+		action.Prepare()
+	}
+	action.worker.Do(player,room,action)
+}
+
+//Action requirements
+
+type ActionRequirements []*ActionRequirement
+type ActionRequirement struct {
+	Type string 				`json:"type"`
+	Value string 				`json:"value"`
+	ErrorMessage string 		`json:"error_msg"`
+}
+
+//Actioner interface
+
+type Actioner interface {
+	Prepare() bool
+	Do(*Player, *Room, *Action)
+}
 
 func AppendVariablesToString(str string, player *Player, config map[string]interface{}) string {
 	str = strings.Replace(str,"%player%",player.Name,-1)
@@ -15,99 +76,119 @@ func AppendVariablesToString(str string, player *Player, config map[string]inter
 	return str
 }
 
-var ActionsDirectory = make(map[string]ActionFunction)
+//Message action type
 
-func LoadActions() {
+type ActionTypeMessage struct {
+	MessageAll string		`json:"msg_all"`
+	MessageParty string		`json:"msg_party"`
+	MessagePlayer string	`json:"msg_player"`
+}
 
-	ActionsDirectory["message"] = func(room *Room,player *Player,config map[string]interface{}) {} //Automatically processed - just a placeholder
+func (a *ActionTypeMessage) Prepare() bool {
+	return a.MessageAll != "" || a.MessageParty != "" || a.MessagePlayer != "";
+}
 
-	ActionsDirectory["location"] = func(room *Room,player *Player,config map[string]interface{}) {
-		actionType, found := config["type"]
-		if(found) {
-			location := room.CurrentLocation
-			switch (actionType){
-			case "use":
-				actionName, found := config["value"]
-				if(found) {
-					location.DoAction(room,player,fmt.Sprint(actionName))
-				}
-			}
-		}
+func (a *ActionTypeMessage) Do(player *Player, room *Room, action *Action) {
+	if(a.MessageAll != "") {
+		room.TellAll(AppendVariablesToString(a.MessageAll,player,action.Config))
+	}
+	if(a.MessageParty != "") {
+		room.TellAllExcept(AppendVariablesToString(a.MessageParty,player,action.Config),player)
+	}
+	if(a.MessagePlayer != "") {
+		room.Tell(AppendVariablesToString(a.MessagePlayer,player,action.Config),player)
+	}
+}
+
+//Location action type
+
+type ActionTypeLocation struct {
+	Type string			`json:"type"`
+	Value string		`json:"value"`
+}
+
+func (a *ActionTypeLocation) Prepare() bool {
+	return a.Type != "" && a.Value != ""
+}
+
+func (a *ActionTypeLocation) Do(player *Player, room *Room, action *Action) {
+	switch (a.Type){
+	case "use":
+		room.CurrentLocation.DoAction(room,player,a.Value)
+	}
+}
+
+//Effect action type
+
+type ActionTypeEffect struct {
+	Type string 			`json:"type"`
+	Value float64 			`json:"value"`
+	MessageAll string		`json:"msg_all"`
+	MessageParty string		`json:"msg_party"`
+	MessagePlayer string	`json:"msg_player"`
+}
+
+func (a *ActionTypeEffect) Prepare() bool {
+	return a.Type != ""
+}
+
+func (a *ActionTypeEffect) Do(player *Player, room *Room, action *Action) {
+	//Do effect
+	switch(a.Type){
+	case "damage":
+		player.Damage(a.Value)
+	case "heal":
+		player.Heal(a.Value)
+	}
+	//Send messages
+	if(a.MessageAll != "") {
+		room.TellAll(AppendVariablesToString(a.MessageAll,player,action.Config))
+	}
+	if(a.MessageParty != "") {
+		room.TellAllExcept(AppendVariablesToString(a.MessageParty,player,action.Config),player)
+	}
+	if(a.MessagePlayer != "") {
+		room.Tell(AppendVariablesToString(a.MessagePlayer,player,action.Config),player)
+	}
+}
+
+//Give action type
+
+type ActionTypeGive struct {
+	Amount int 				`json:"amount"`
+	Items ItemLootTable 	`json:"items"`
+}
+
+func (a *ActionTypeGive) Prepare() bool {
+	//No items in table = fail
+	if(len(a.Items) == 0) {
+		return false
 	}
 
-	ActionsDirectory["give"] = func(room *Room,player *Player,config map[string]interface{}) {
-		//Amount of looted items
-		amount := 1
-		value, found := config["amount"]
-		if (found) {
-			amount = (int)(value.(float64))
-		}
+	//Cycle trough items and bind template
+	for _, item := range a.Items {
+		item.Template = ItemTemplateDirectory[item.Id]
+	}
 
-		//Prepare loot table
-		table := ItemLootTable{}
-		for _, itemConfig := range config["items"].([]interface{}) {
-			config := itemConfig.(map[string]interface{})
-			item := &ItemLoot{}
-			value, found := config["id"]
-			if (found) {
-				item.Template = ItemTemplateDirectory[value.(string)]
+	return true
+}
 
-				value, found = config["chance"]
-				if (found) {
-					item.Chance = value.(float64)
-				} else {
-					item.Chance = 1.0
-				}
-
-				value, found = config["msg_party"]
-				if (found) {
-					item.MessageParty = AppendVariablesToString(value.(string),player,config)
-				}
-
-				value, found = config["msg_player"]
-				if (found) {
-					item.MessagePlayer = AppendVariablesToString(value.(string),player,config)
-				}
-
-				table = append(table, item)
-			}
-		}
-
-		//Get looted items
-		items := GetItemsFromLootTable(amount, table)
+func (a *ActionTypeGive) Do(player *Player, room *Room, action *Action) {
+	if(a.Amount > 0) {
+		//Give looted items
+		items := GetItemsFromLootTable(a.Amount, a.Items)
 		for _, item := range items {
 			if (item.MessagePlayer != "") {
-				room.Tell(item.MessagePlayer, player)
+				room.Tell(AppendVariablesToString(item.MessagePlayer,player,action.Config), player)
 			}
 			if (item.MessageParty != "") {
-				room.TellAllExcept(item.MessageParty, player)
+				room.TellAllExcept(AppendVariablesToString(item.MessageParty,player,action.Config), player)
 			}
 			if (item.Template != nil) {
 				player.Inventory = append(player.Inventory, item.Template.GenerateItem())
 			}
 		}
 	}
-
-	ActionsDirectory["effect"] = func(room *Room,player *Player,config map[string]interface{}) {
-		//Process effect
-		fxType, found := config["type"]
-		if(found) {
-			switch(fxType){
-			case "hurt":
-				value, found := config["value"]
-				if(found) {
-					player.Damage((int64)(value.(float64)))
-				}
-				break
-			case "heal":
-				value, found := config["value"]
-				if(found) {
-					player.Heal((int64)(value.(float64)))
-				}
-				break
-			}
-		}
-	}
-
 }
+
 

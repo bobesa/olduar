@@ -125,9 +125,11 @@ func (template *ItemTemplate) GenerateItem() *Item {
 
 type ItemLootTable []*ItemLoot
 type ItemLoot struct {
-	Template *ItemTemplate
-	Chance float64
-	MessageParty, MessagePlayer string
+	Id string 					`json:"id"`
+	Template *ItemTemplate 		`json:"-"`
+	Chance float64 				`json:"chance"`
+	MessageParty string			`json:"msg_party"`
+	MessagePlayer string		`json:"msg_player"`
 }
 
 // Item Template definition
@@ -186,6 +188,6 @@ func (item *Item) GenerateResponse() ResponseItem {
 
 func (item *Item) Use(player *Player) {
 	for index, _ := range item.Attributes.Actions {
-		player.Room.DoAction(player,&item.Attributes.Actions[index])
+		player.Room.DoAction(player,&item.Actions[index])
 	}
 }

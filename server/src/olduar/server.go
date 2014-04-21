@@ -58,7 +58,6 @@ func Run(configFilename string) {
 	if(LoadLocations() && LoadItems()) {
 		//Initialize actions
 		LoadAttributes()
-		LoadActions()
 
 		//Prepare folders if not existing
 		os.MkdirAll(MainServerConfig.DirSave+"/players",0777)

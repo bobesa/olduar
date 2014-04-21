@@ -23,8 +23,8 @@ type Player struct {
 	Name string 			`json:"name"`
 
 	//Stats
-	Health int64 			`json:"health"`
-	MaxHealth int64 		`json:"health_max"`
+	Health float64 			`json:"health"`
+	MaxHealth float64 		`json:"health_max"`
 	Inventory Inventory		`json:"inventory"`
 
 	//System properties
@@ -152,14 +152,14 @@ func (p *Player) Give(entry string) {
 	}
 }
 
-func (p *Player) Heal(value int64) {
+func (p *Player) Heal(value float64) {
 	p.Health += value
 	if(p.Health > p.MaxHealth) {
 		p.Health = p.MaxHealth
 	}
 }
 
-func (p *Player) Damage(value int64) {
+func (p *Player) Damage(value float64) {
 	p.Health -= value
 	if(p.Health <= 0) {
 		p.Health = 0
