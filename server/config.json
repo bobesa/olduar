@@ -6,5 +6,5 @@
 
     "directory_items":"db/items",
     "directory_locations":"db/locations",
-    "directory_attributes":"db/attributes"
+    "directory_other":"db/other"
 }

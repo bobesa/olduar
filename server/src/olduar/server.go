@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	VERSION = "0.0.2"
+	VERSION = "0.0.3"
 )
 
 type ServerConfig struct {
@@ -24,7 +24,7 @@ type ServerConfig struct {
 
 	DirItems string			`json:"directory_items"`
 	DirLocations string		`json:"directory_locations"`
-	DirAttributes string	`json:"directory_attributes"`
+	DirOther string			`json:"directory_other"`
 }
 
 var MainServerMux *http.ServeMux
@@ -57,7 +57,8 @@ func Run(configFilename string) {
 	//Loading of files etc.
 	if(LoadLocations() && LoadItems()) {
 		//Initialize actions
-		InitializeActions()
+		LoadAttributes()
+		LoadActions()
 
 		//Prepare folders if not existing
 		os.MkdirAll(MainServerConfig.DirSave+"/players",0777)

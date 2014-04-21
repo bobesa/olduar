@@ -8,16 +8,6 @@ import (
 	"math/rand"
 )
 
-const (
-	QUALITY_POOR = 0
-	QUALITY_COMMON = 1
-	QUALITY_UNCOMMON = 2
-	QUALITY_RARE = 3
-	QUALITY_EPIC = 4
-	QUALITY_LEGENDARY = 5
-	QUALITY_ARTIFACT = 6
-)
-
 // Loader for item templates
 
 func LoadItems() bool {

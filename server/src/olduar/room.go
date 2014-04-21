@@ -453,4 +453,5 @@ func (room *Room) Leave(player *Player) {
 func (room *Room) Join(player *Player) {
 	room.Players = append(room.Players,player)
 	player.Room = room
+	player.LastResponseId = room.LastMessageId
 }

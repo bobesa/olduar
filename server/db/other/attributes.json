@@ -55,20 +55,21 @@
 		"id":"fire_power",
 		"name":"Fire power",
 		"desc":"Enhancing power for fire damage (25%) and abilities (100%)",
-		"type":"damage-mod",
+		"type":"mod",
 		"groups":[2],
 		"config":{
-			"damage":0.25
+			"damage":0.25,
+			"ability":1.0
 		}
 	},
 	{
 		"id":"life_steal",
 		"name":"Life-steal",
-		"desc":"Ability to steal life (25%) upon attack",
-		"type":"damage-mod",
+		"desc":"Ability to steal life upon attack",
+		"type":"mod",
 		"config":{
 			"msg":"%damage% health got stolen from %target%",
-			"heal":0.25
+			"heal":1.0
 		}
 	},
 

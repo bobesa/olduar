@@ -17,7 +17,7 @@ func AppendVariablesToString(str string, player *Player, config map[string]inter
 
 var ActionsDirectory = make(map[string]ActionFunction)
 
-func InitializeActions() {
+func LoadActions() {
 
 	ActionsDirectory["message"] = func(room *Room,player *Player,config map[string]interface{}) {} //Automatically processed - just a placeholder
 
