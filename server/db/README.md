@@ -253,3 +253,31 @@ Location item properties
     {"group":"swords","chance":0.005}
 ]
 ```
+
+Attribute properties
+====================
+
+`"id"` (__string__) unique id of action, same id is used in npc/item attribute declaration
+
+`"name"` (__string__) name of attribute
+
+`"desc"` (__string__) description of attribute
+
+`"type"` (__string__) type of attribute (`damage`,`resistance`,`mod`,`attribute`)
+
+`"groups"` (__array of int__, __optional__) groups that are affected by this attribute
+
+`"config"` (__object__) configuration for attribute type
+
+```json
+{
+    "id":"damage",
+    "name":"Damage",
+    "desc":"Basic damage",
+    "type":"damage",
+    "groups":[1],
+    "config":{
+        "msg":"%target% got hit for %damage% damage"
+    }
+}
+```
