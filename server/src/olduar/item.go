@@ -150,6 +150,7 @@ type ItemTemplate struct {
 	//Stats
 	DamageMin int64			`json:"damage_min"`
 	DamageMax int64			`json:"damage_max"`
+	Stats AttributeList		`json:"stats"`
 
 	//Prepared response object
 	Response ResponseItemDetail `json:"-"`

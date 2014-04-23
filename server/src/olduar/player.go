@@ -26,6 +26,7 @@ type Player struct {
 	Health float64 			`json:"health"`
 	MaxHealth float64 		`json:"health_max"`
 	Inventory Inventory		`json:"inventory"`
+	Stats AttributeList		`json:"-"`
 
 	//System properties
 	AuthToken string		`json:"-"`
@@ -139,6 +140,20 @@ func (p *Player) Drop(entry string) bool {
 		return true
 	}
 	return false
+}
+
+func (p *Player) Equip(entry string) {
+	item := p.Inventory.Get(entry)
+	if(item == nil) {
+		return
+	}
+	item.Equipped = true
+	p.Stats.Reset()
+	for _, item := range p.Inventory {
+		if(item.Equipped) {
+			p.Stats.Append(item.Attributes.Stats)
+		}
+	}
 }
 
 func (p *Player) Owns(entry string) bool {

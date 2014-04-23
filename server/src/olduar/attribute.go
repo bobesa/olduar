@@ -89,6 +89,10 @@ type AttributeWorker interface {
 type AttributeValue struct {
 	Min, Max float64
 }
+func (value AttributeValue) Add(stat AttributeValue) {
+	value.Min += stat.Min
+	value.Max += stat.Max
+}
 func (value AttributeValue) Value() float64 {
 	return value.Min + (rand.Float64() * (value.Max - value.Min))
 }
@@ -101,6 +105,22 @@ func MakeAttributeValueMinMax(min float64, max float64) AttributeValue {
 
 //List of attributes & values
 type AttributeList map[string]AttributeValue
+
+func (list *AttributeList) Reset() {
+	*list = make(AttributeList)
+}
+
+func (list *AttributeList) Append(list2 AttributeList) {
+	for key, value := range list2 {
+		_, found := (*list)[key]
+		if(found) {
+			(*list)[key].Add(value)
+		} else {
+			(*list)[key] = value
+		}
+	}
+}
+
 func (attacker AttributeList) Attack(target AttributeList, room *Room) (float64, float64) {
 	dmgTarget, healAttacker := 0.0, 0.0
 
