@@ -4,7 +4,8 @@
 		"name": "Wooden sword",
 		"desc": "A simple sword made out of wood",
 		"type": "1hand",
-		"groups": ["sword"],
+		"class": "sword",
+		"groups": ["swords"],
 		"stats": {
 			"damage":{"min":3,"max":5}
 		}
@@ -14,7 +15,8 @@
 		"name": "Bronze sword",
 		"desc": "Sword made out of bronze",
 		"type": "1hand",
-		"groups": ["sword"],
+		"class": "sword",
+		"groups": ["swords"],
 		"stats": {
 			"damage":{"min":6,"max":9}
 		}
@@ -24,7 +26,8 @@
 		"name": "Steel sword",
 		"desc": "Sword made out of steel",
 		"type": "1hand",
-		"groups": ["sword"],
+		"class": "sword",
+		"groups": ["swords"],
 		"stats": {
 			"damage":{"min":10,"max":14}
 		}

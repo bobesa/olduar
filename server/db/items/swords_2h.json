@@ -4,7 +4,8 @@
 		"name": "Bastard sword",
 		"desc": "Massive sword made out of steel",
 		"type": "2hand",
-		"groups": ["sword"],
+		"class": "sword",
+		"groups": ["swords"],
 		"stats": {
 			"damage":{"min":25,"max":35}
 		}

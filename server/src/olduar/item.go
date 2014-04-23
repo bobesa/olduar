@@ -154,8 +154,16 @@ type ItemTemplate struct {
 }
 
 func (i *ItemTemplate) Prepare() {
-	i.Response.Name = &i.Name
-	i.Response.Description = &i.Description
+	res := &i.Response
+
+	res.Quality = i.Quality
+	res.Name = &i.Name
+	res.Description = &i.Description
+	res.Class = &i.Class
+	res.Type = &i.Type
+	res.Weight = i.Weight
+	res.Usable = len(i.Actions) > 0
+	res.Stats = &i.Stats
 }
 
 type Item struct {
@@ -178,9 +186,12 @@ func (item *Item) Load() bool {
 
 func (item *Item) GenerateResponse() ResponseItem {
 	return ResponseItem{
+		Quality: item.Attributes.Quality,
 		Id: &item.Id,
 		Name: &item.Attributes.Name,
 		Description: &item.Attributes.Description,
+		Equipped: item.Equipped,
+		Usable: len(item.Actions) > 0,
 	}
 }
 

@@ -4,7 +4,7 @@
         "name": "Fishing pole",
         "desc": "A simple fishing pole",
         "type": "2hand",
-        "groups": ["staff"],
+		"class": "staff",
 		"stats": {
 			"damage":{"min":1,"max":5}
 		},
@@ -26,6 +26,7 @@
         "name": "Fish",
         "desc": "A small fish",
         "type": "consumable",
+		"class": "food",
         "actions":[{
             "action":"effect",
             "config":{
@@ -40,6 +41,7 @@
         "name": "Goldfish",
         "desc": "A small non-magical goldfish",
         "type": "consumable",
+		"class": "food",
         "actions":[{
             "action":"effect",
             "config":{

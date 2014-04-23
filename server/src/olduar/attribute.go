@@ -87,7 +87,8 @@ type AttributeWorker interface {
 
 //Attribute value
 type AttributeValue struct {
-	Min, Max float64
+	Min float64 `json:"min"`
+	Max float64 `json:"max"`
 }
 func (value AttributeValue) Add(stat AttributeValue) {
 	value.Min += stat.Min

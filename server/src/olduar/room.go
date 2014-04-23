@@ -85,15 +85,24 @@ type Response struct {
 }
 
 type ResponseItem struct {
+	Quality int8 `json:"quality"`
 	Id *string `json:"id"`
 	Name *string `json:"name"`
 	Description *string `json:"desc"`
+	Equipped bool `json:"equipped"`
+	Usable bool `json:"usable"`
 }
 
 type ResponseItemDetail struct {
 	//All properties must be pointers as we are just reusing something from item template
-	Name *string `json:"name"`
-	Description *string `json:"desc"`
+	Quality int8 			`json:"quality"`
+	Name *string 			`json:"name,omitempty"`
+	Description *string		`json:"desc,omitempty"`
+	Class *string			`json:"class,omitempty"`
+	Type *string			`json:"type,omitempty"`
+	Weight float64			`json:"weight"`
+	Usable bool				`json:"usable"`
+	Stats *AttributeList	`json:"stats,omitempty"`
 }
 
 // Game State and functions
