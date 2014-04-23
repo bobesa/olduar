@@ -146,10 +146,6 @@ type ItemTemplate struct {
 	Type string				`json:"type"`
 	Weight float64			`json:"weight"`
 	Actions Actions			`json:"actions,omitempty"`
-
-	//Stats
-	DamageMin int64			`json:"damage_min"`
-	DamageMax int64			`json:"damage_max"`
 	Stats AttributeList		`json:"stats"`
 
 	//Prepared response object
