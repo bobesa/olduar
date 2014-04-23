@@ -85,6 +85,18 @@ Returns description of object or __null__ if __{item}__ is not available on grou
 ```
 *Attributes and other properties will be added over time*
 
+### GET /api/stats
+Returns key value representation of player's stats
+```json
+{
+    "damage": {"min":5,"max":6},
+    "defense": {"min":10,"max":12}
+}
+```
+
+### GET /api/equip/{item}
+Returns key value representation of player's stats (see `GET /api/stats`) or __null__ if __{item}__ is not available in inventory
+
 ### GET /api/party
 Returns list of players in room, if player is not joined to a room `[]`(empty array) is returned
 ```json

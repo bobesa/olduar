@@ -79,11 +79,29 @@ func Run(configFilename string) {
 			MaxHeaderBytes: 1 << 20,
 		}
 
-		//REST Api
-		apiPath := "/api/"
-		apiPathLen := len(apiPath)
-		MainServerMux.HandleFunc(apiPath, func(w http.ResponseWriter, r *http.Request){
-				params := strings.Split(r.URL.Path[apiPathLen:],"/")
+		//REST API: Admin
+		MainServerMux.HandleFunc("/admin/", func(w http.ResponseWriter, r *http.Request) {
+				params := strings.Split(r.URL.Path[7:], "/")
+				paramLen := len(params)
+				if (paramLen == 0) {
+					http.NotFound(w, r)
+					return
+				}
+
+				switch(params[0]) {
+				case "give":
+					if(paramLen == 3) {
+						player := ActivePlayersByUsername[params[1]]
+						if(player != nil) {
+							player.Give(params[2])
+						}
+					}
+				}
+			});
+
+		//REST API: Player
+		MainServerMux.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request){
+				params := strings.Split(r.URL.Path[5:],"/")
 				paramLen := len(params)
 				if(paramLen == 0) {
 					http.NotFound(w,r)
@@ -133,7 +151,7 @@ func Run(configFilename string) {
 				//Process command
 				w.Header().Set("Content-Type", "application/json")
 				switch(params[0]){
-				case "save", "look", "do", "go", "inventory", "inspect", "pickup", "drop", "use":
+				case "save", "look", "do", "go", "inventory", "inspect", "pickup", "drop", "use", "equip", "stats":
 					if(player.Room == nil) {
 						w.Write([]byte("null"))
 						return

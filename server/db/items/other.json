@@ -4,9 +4,10 @@
         "name": "Fishing pole",
         "desc": "A simple fishing pole",
         "type": "2hand",
-        "class": "staff",
-        "damage_min": 1,
-        "damage_max": 5,
+        "groups": ["staff"],
+		"stats": {
+			"damage":{"min":1,"max":5}
+		},
         "actions":[{
             "action":"location",
             "config":{

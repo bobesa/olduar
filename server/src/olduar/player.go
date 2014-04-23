@@ -34,6 +34,9 @@ type Player struct {
 	Room *Room 				`json:"-"`
 	LastResponseId int64	`json:"-"`
 	LastResponse time.Time	`json:"-"`
+
+	//Equip Slots
+	slotLeftHand, slotRightHand, slotHead, slotTorso, slotHands, slotLegs, slotFeet *Item
 }
 
 func LoadAllPlayers() {
@@ -142,18 +145,74 @@ func (p *Player) Drop(entry string) bool {
 	return false
 }
 
-func (p *Player) Equip(entry string) {
+func (p *Player) UnEquip(item *Item) {
+	if(item != nil) {
+		item.Equipped = false
+	}
+}
+
+func (p *Player) Equip(entry string) bool {
 	item := p.Inventory.Get(entry)
 	if(item == nil) {
-		return
+		return false
+	}
+
+	//Equip item and replace slots
+	switch item.Attributes.Type {
+	case "1hand":
+		if(p.slotLeftHand != nil && p.slotLeftHand.Attributes.Type == "2hand") {
+			p.UnEquip(p.slotLeftHand)
+			p.UnEquip(p.slotRightHand)
+			p.slotLeftHand = item
+			p.slotRightHand = nil
+
+		} else if(p.slotRightHand == nil) {
+			p.slotRightHand = item
+
+		} else {
+			p.UnEquip(p.slotLeftHand)
+			p.slotLeftHand = item
+		}
+
+	case "2hand":
+		p.UnEquip(p.slotLeftHand)
+		p.UnEquip(p.slotRightHand)
+		p.slotLeftHand = item
+		p.slotRightHand = item
+
+	case "head":
+		p.UnEquip(p.slotHead)
+		p.slotHead = item
+
+	case "torso":
+		p.UnEquip(p.slotTorso)
+		p.slotTorso = item
+
+	case "hands":
+		p.UnEquip(p.slotHands)
+		p.slotHands = item
+
+	case "legs":
+		p.UnEquip(p.slotLegs)
+		p.slotLegs = item
+
+	case "feet":
+		p.UnEquip(p.slotFeet)
+		p.slotFeet = item
+
+	default:
+		return false
 	}
 	item.Equipped = true
+
+	//Count stats
 	p.Stats.Reset()
 	for _, item := range p.Inventory {
 		if(item.Equipped) {
 			p.Stats.Append(item.Attributes.Stats)
 		}
 	}
+	return true
 }
 
 func (p *Player) Owns(entry string) bool {

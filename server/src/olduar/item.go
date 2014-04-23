@@ -143,6 +143,7 @@ type ItemTemplate struct {
 	Quality int8 			`json:"quality"`
 	Name string 			`json:"name"`
 	Description string		`json:"desc"`
+	Class string			`json:"class"`
 	Type string				`json:"type"`
 	Weight float64			`json:"weight"`
 	Actions Actions			`json:"actions,omitempty"`

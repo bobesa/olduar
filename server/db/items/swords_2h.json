@@ -1,0 +1,12 @@
+[
+	{
+		"id": "bastard_sword",
+		"name": "Bastard sword",
+		"desc": "Massive sword made out of steel",
+		"type": "2hand",
+		"groups": ["sword"],
+		"stats": {
+			"damage":{"min":25,"max":35}
+		}
+	}
+]

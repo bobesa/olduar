@@ -223,6 +223,12 @@ func (room *Room) Prepare() {
 				if(cmd.Player.Use(cmd.Parameter)) {
 					resp = room.GetPlayerResponse(cmd.Player)
 				}
+			case "stats":
+				resp, _ = json.Marshal(cmd.Player.Stats)
+			case "equip":
+				if(cmd.Player.Equip(cmd.Parameter)) {
+					resp, _ = json.Marshal(cmd.Player.Stats)
+				}
 			}
 			if(resp == nil) {
 				resp = []byte("null")

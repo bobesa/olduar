@@ -1,0 +1,32 @@
+[
+	{
+		"id": "wooden_sword",
+		"name": "Wooden sword",
+		"desc": "A simple sword made out of wood",
+		"type": "1hand",
+		"groups": ["sword"],
+		"stats": {
+			"damage":{"min":3,"max":5}
+		}
+	},
+	{
+		"id": "bronze_sword",
+		"name": "Bronze sword",
+		"desc": "Sword made out of bronze",
+		"type": "1hand",
+		"groups": ["sword"],
+		"stats": {
+			"damage":{"min":6,"max":9}
+		}
+	},
+	{
+		"id": "steel_sword",
+		"name": "Steel sword",
+		"desc": "Sword made out of steel",
+		"type": "1hand",
+		"groups": ["sword"],
+		"stats": {
+			"damage":{"min":10,"max":14}
+		}
+	}
+]
