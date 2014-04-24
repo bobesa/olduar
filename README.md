@@ -3,6 +3,15 @@ Olduar
 
 Democratic multiplayer text adventure
 
+Quick start
+=====
+
+        $ git clone ...
+        $ cd server
+        $ go run src/run/go
+
+Open [http://localhost:8080/client](http://localhost:8080/client) in your browser
+
 REST Api
 ========
 
