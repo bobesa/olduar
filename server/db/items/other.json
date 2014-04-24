@@ -49,5 +49,19 @@
                 "value": 50
             }
         }]
-    }
+    },
+	{
+		"id": "meat",
+		"name": "Raw meat",
+		"desc": "Flank of raw meat",
+		"type": "consumable",
+		"class": "food",
+		"actions":[{
+			"action":"effect",
+			"config":{
+				"type":"heal",
+				"value": 40
+			}
+		}]
+	}
 ]
