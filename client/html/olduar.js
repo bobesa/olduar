@@ -4,6 +4,17 @@ var Server = "",
 
 var FADE_ANIMATION_TIME = 500;
 
+var SlotTypes = {
+	"consumable": "Consumable",
+	"1hand": "One handed",
+	"2hand": "Two handed",
+	"head": "Headwear",
+	"torso": "Torso",
+	"hands": "Handwear",
+	"legs": "Leggings",
+	"feet": "Footwear"
+};
+
 var request = function(method,command,value,callback){
 	if(typeof value == "function") {
 		callback = value;
@@ -13,13 +24,13 @@ var request = function(method,command,value,callback){
 	xhr.addEventListener("readystatechange",function(){
 		if(xhr.readyState==4) {
 			if (xhr.status == 200) {
-				callback(JSON.parse(xhr.responseText));
-				document.getElementById("game").style.display = "";
-				document.getElementById("account").style.display = "none";
+				document.getElementById("viewGame").style.display = "";
+				document.getElementById("viewLogin").style.display = "none";
+				if(callback) callback(JSON.parse(xhr.responseText));
 			} else {
-				callback(null);
-				document.getElementById("game").style.display = "none";
-				document.getElementById("account").style.display = "";
+				document.getElementById("viewGame").style.display = "none";
+				document.getElementById("viewLogin").style.display = "";
+				if(callback) callback(null);
 			}
 		}
 	});
@@ -130,6 +141,7 @@ var updateDomList = function(rootDom, list, data, update) {
 
 var parseLocationData = function(data){
 	if(data != null) {
+		//Process location data
 		domLocationName.innerHTML = data.name;
 		domLocationDescription.innerHTML = data.desc;
 		if(data.history) data.history.forEach(function(event){
@@ -155,6 +167,94 @@ var parseLocationData = function(data){
 			});
 			//TODO: Inspection on hover
 		});
+	} else {
+		//Show room selection
+		toggleTabs("tabRooms");
+	}
+
+}, updateCredentials = function(){
+	Username = document.getElementById("txtUser").value;
+	Password = document.getElementById("txtPass").value;
+	window.localStorage.setItem("olduar_username",Username);
+	window.localStorage.setItem("olduar_password",Password);
+
+}, getQualityColor = function(quality) {
+	return "#000";
+
+},toggleTabs = function(wanted){
+	//Show wanted tab - hide others
+	["tabLocation","tabInventory","tabRooms","tabAccount"].forEach(function(name){ document.getElementById(name).style.display = name==wanted?"block":"none"; });
+	if(wanted == "tabInventory") {
+		request("GET","inventory",function(inventory){
+			var domInv = document.getElementById("inventory");
+			if(inventory == null || inventory.length == 0) {
+				domInv.innerHTML = "Your inventory is empty";
+			} else {
+				domInv.innerHTML = "";
+				inventory.forEach(function(item){
+					var dom = document.createElement("div");
+					dom.className = "item";
+					dom.innerHTML = '<span class="name" style="color:'+getQualityColor(item.quality)+'">' + item.name + "</span><br>" + '<span class="desc">'+item.desc+'</span>';
+					if(item.usable) dom.addEventListener("click",function(){
+						request("post","use/"+item.id,parseLocationData);
+					});
+					domInv.appendChild(dom);
+
+					//Attach events
+					var domInspect = document.getElementById("inspect");
+					dom.addEventListener("mouseover",function(e){
+						domInspect.style.left = e.clientX+"px";
+						domInspect.style.top = (e.clientY+20)+"px";
+						domInspect.style.display = "block";
+						domInspect.style.innerHTML = "Loading...";
+						request("GET","inspect/"+item.id,function(detail){
+							var str = '<div class="name" style="color:'+getQualityColor(item.quality)+'">'+detail.name+'</div>'; //TODO: Quality affect name color
+							if(detail.type != "") str += '<div class="type">'+SlotTypes[detail.type]+(detail.class != "" && (detail.type == "consumable" || detail.type == "1hand" || detail.type == "2hand") ? " " + detail.class : "")+'</div>';
+							if(detail.stats) Object.keys(detail.stats).forEach(function(stat){
+								str += '<div class="stat"><b>'+stat+'</b>: ';
+								var values = detail.stats[stat];
+								if(values.min == values.max) {
+									str += values.min;
+								} else {
+									str += values.min + " - " + values.max;
+								}
+								str += '</div>';
+							});
+							if(detail.desc != "") str += '<div class="desc">"'+detail.desc+'"</div>';
+							if(detail.weight > 0) str += '<div class="detail">Weights '+detail.weight+'lb</div>';
+							if(detail.usable) str += '<div class="detail">This is usable item</div>';
+							domInspect.innerHTML = str;
+						});
+					});
+					dom.addEventListener("mouseout",function(){
+						domInspect.style.display = "none";
+					});
+					dom.addEventListener("mousemove",function(){
+						domInspect.style.left = event.clientX+"px";
+						domInspect.style.top = (event.clientY+20)+"px";
+					});
+				});
+			}
+		});
+	}
+
+}, reloadListOfRooms = function(rooms){
+	toggleTabs("tabRooms");
+	var domList = document.getElementById("listRooms");
+	domList.innerHTML = "";
+	if(rooms.length == 0) {
+		var dom = document.createElement("option");
+		dom.innerHTML = "No rooms are currently active";
+		dom.disabled = true;
+		domList.appendChild(dom);
+
+	} else {
+		rooms.forEach(function(room){
+			var dom = document.createElement("option");
+			dom.innerHTML = room;
+			dom.value = room;
+			domList.appendChild(dom);
+		});
 	}
 };
 
@@ -166,18 +266,52 @@ window.addEventListener("load",function(){
 	domLocationActions = document.getElementById("locationActions");
 	domLocationItems = document.getElementById("locationItems");
 
-	//Account settings
-	Username = document.getElementById("txtUser").value;
-	Password = document.getElementById("txtPass").value;
+	//List
+	document.getElementById("listRooms").addEventListener("change",function(e){
+		document.getElementById("txtRoom").value = this.value;
+	});
+
+	//Tabs
+	document.getElementById("buttonTabLocation").addEventListener("click",function(){
+		toggleTabs("tabLocation");
+	});
+	document.getElementById("buttonTabInventory").addEventListener("click",function(){
+		toggleTabs("tabInventory");
+	});
+	document.getElementById("buttonTabRooms").addEventListener("click",function(){
+		toggleTabs("tabRooms");
+	});
+	document.getElementById("buttonTabAccount").addEventListener("click",function(){
+		toggleTabs("tabAccount");
+	});
 
 	//Buttons
+	document.getElementById("buttonLogin").addEventListener("click",function(){
+		updateCredentials();
+		request("get","look",parseLocationData);
+	});
 	document.getElementById("buttonRegister").addEventListener("click",function(){
+		updateCredentials();
 		request("post","register",function(success){
 			if(success){
 				request("get","look",parseLocationData);
 			} else {
-				alert("Username is taken or invalid")
+				document.getElementById("viewGame").style.display = "none";
+				document.getElementById("viewLogin").style.display = "";
+				alert("Username is taken or invalid");
 			}
+		});
+	});
+	document.getElementById("buttonLogout").addEventListener("click",function(){
+		request("post","leave",function(){
+			Username = "";
+			Password = "";
+			document.getElementById("txtUser").value = Username;
+			document.getElementById("txtPass").value = Password;
+			document.getElementById("viewGame").style.display = "none";
+			document.getElementById("viewLogin").style.display = "";
+			window.localStorage.setItem("olduar_username",Username);
+			window.localStorage.setItem("olduar_password",Password);
 		});
 	});
 	document.getElementById("buttonRename").addEventListener("click",function(){
@@ -186,19 +320,22 @@ window.addEventListener("load",function(){
 		});
 	});
 	document.getElementById("buttonJoin").addEventListener("click",function(){
+		toggleTabs("tabLocation");
 		request("post","join/"+document.getElementById("txtRoom").value,parseLocationData);
 	});
 	document.getElementById("buttonLeave").addEventListener("click",function(){
 		request("post","leave",function(rooms){
-
+			reloadListOfRooms(rooms);
+			//TODO: Handle option that player is forbidden to leave the room
 		});
 	});
+	document.getElementById("buttonRefreshRooms").addEventListener("click",function(){
+		request("get","rooms",reloadListOfRooms);
+	});
 
-	//Polling
-	setInterval(function(){
-		//request("get","look",parseLocationData);
-	},2000);
-
-	//Initial request
-	request("get","look",parseLocationData);
+	Username = window.localStorage.getItem("olduar_username") || "";
+	Password = window.localStorage.getItem("olduar_password") || "";
+	if(Username != "" && Password != "") {
+		request("get","look",parseLocationData);
+	}
 });

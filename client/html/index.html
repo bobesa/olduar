@@ -5,30 +5,59 @@
     <script src="olduar.js" type="application/javascript"></script>
 </head>
 <body>
-<div id="account">
-    Account:
-    <input type="text" id="txtUser" value="test">
-    <input type="password" id="txtPass" value="test2">
-    <input type="button" id="buttonRegister" value="Register">
+<div id="viewLogin">
+    <h1>Account</h1>
+    <table>
+        <tr>
+            <td>Username</td>
+            <td><input type="text" id="txtUser" value=""></td>
+        </tr>
+        <tr>
+            <td>Password</td>
+            <td><input type="password" id="txtPass" value=""></td>
+        </tr>
+        <tr>
+            <td><input type="button" id="buttonLogin" value="Login"></td>
+            <td><input type="button" id="buttonRegister" value="Register"></td>
+        </tr>
+    </table>
 </div>
-<div id="name">
-    Name:
-    <input type="text" id="txtName" value="">
-    <input type="button" id="buttonRename" value="Rename">
-</div>
-<div id="room">
-    Room:
-    <input type="text" id="txtRoom" value="">
-    <input type="button" id="buttonJoin" value="Join">
-    <input type="button" id="buttonLeave" value="Leave">
-</div>
-<div id="game">
-    <div id="eventLog"></div>
-    <div id="locationName"></div>
-    <div id="locationDescription"></div>
-    <div id="locationExits" class="list" data-title="Exits"></div>
-    <div id="locationActions" class="list" data-title="Actions"></div>
-    <div id="locationItems" class="list" data-title="Items"></div>
+<div id="viewGame" style="display:none">
+    <div id="tabs">
+        <span id="buttonTabLocation">Location</span>
+        <span id="buttonTabInventory">Inventory</span>
+        <span id="buttonTabRooms">Rooms</span>
+        <span id="buttonTabAccount">Account</span>
+    </div>
+    <div id="tabLocation" style="display:none">
+        <div id="eventLog"></div>
+        <div id="locationName"></div>
+        <div id="locationDescription"></div>
+        <div id="locationExits" class="list" data-title="Exits"></div>
+        <div id="locationActions" class="list" data-title="Actions"></div>
+        <div id="locationItems" class="list" data-title="Items"></div>
+    </div>
+    <div id="tabInventory" style="display:none">
+        <h1>Inventory</h1>
+        <div id="inventory"></div>
+        <div id="inspect"></div>
+    </div>
+    <div id="tabRooms" style="display:none">
+        <h1>Rooms</h1>
+        <input type="text" id="txtRoom" value="test">
+        <input type="button" id="buttonJoin" value="Join">
+        <br>
+        <select id="listRooms"><option disabled="disabled">Hit refresh to get list of active rooms</option></select> <input type="button" id="buttonRefreshRooms" value="Refresh">
+        <br>
+        <input type="button" id="buttonLeave" value="Leave current room">
+    </div>
+    <div id="tabAccount" style="display:none">
+        <h1>Account</h1>
+        <input type="text" id="txtName" value="">
+        <input type="button" id="buttonRename" value="Rename">
+        <br>
+        <input type="button" id="buttonLogout" value="Logout">
+    </div>
 </div>
 
 </body>

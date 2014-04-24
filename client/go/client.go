@@ -162,6 +162,24 @@ func (room *Room) Print() {
 	}
 }
 
+type AttributeValue struct {
+	Min float64 `json:"min"`
+	Max float64 `json:"max"`
+}
+type AttributeList map[string]AttributeValue
+
+func (list AttributeList) Print() {
+	for stat, values := range list {
+		if(values.Min == values.Max) {
+			fmt.Println(formatBold(stat) + ": " + formatInfo(fmt.Sprint(values.Min)))
+		} else {
+			fmt.Println(formatBold(stat) + ": " + formatInfo(fmt.Sprint(values.Min)) + formatBold(" - ") + formatInfo(fmt.Sprint(values.Max)))
+		}
+	}
+}
+
+//Authorization + Registration
+
 func RequireAuth() {
 	fmt.Println(formatBoldColor("Wrong Username (",COLOR_RED)+formatBold(Username)+formatBoldColor(") or Password ",COLOR_RED)+" ("+formatInfo("enter same credentials again to register new user")+")")
 	oUser, oPass := Username, Password
@@ -233,19 +251,26 @@ func PrintLine() {
 
 func PrintHelp() {
 	fmt.Println("\t"+formatCommand("help")+" \t\t\t\t\t\t List of available commands")
+
 	fmt.Println("\t"+formatCommand("look")+" \t\t\t\t\t\t See current location description etc.")
 	fmt.Println("\t"+formatCommand("go")+" [direction] \t\t\t\t Walk to a new place (example: "+formatInfo("go west")+")")
 	fmt.Println("\t"+formatCommand("do")+" [task] \t\t\t\t\t Do action (example: "+formatInfo("do drink")+")")
+
 	fmt.Println("\t"+formatCommand("inventory")+" \t\t\t\t\t See your inventory")
 	fmt.Println("\t"+formatCommand("pickup")+" [item] \t\t\t\t Pickup object on ground (example: "+formatInfo("pickup shield")+")")
 	fmt.Println("\t"+formatCommand("drop")+" [item] \t\t\t\t Drop object from inventory on ground (example: "+formatInfo("drop axe")+")")
 	fmt.Println("\t"+formatCommand("inspect")+" [item] \t\t\t\t Displays complete info about item (example: "+formatInfo("inspect fishing_pole")+")")
+	fmt.Println("\t"+formatCommand("equip")+" [item] \t\t\t\t Equips item (example: "+formatInfo("equip fishing_pole")+")")
+	fmt.Println("\t"+formatCommand("stats")+" \t\t\t\t\t\t Current player's stats")
+
 	fmt.Println("\t"+formatCommand("tell")+" [player] [message] \t Send message to player (example: "+formatInfo("tell noam Hi!")+")")
 	fmt.Println("\t"+formatCommand("say")+" [message] \t\t\t\t Send message to party (example: "+formatInfo("say Hello guys")+")")
 	fmt.Println("\t"+formatCommand("rename")+" [name] \t\t\t\t Rename yourself to new name (example: "+formatInfo("rename Bugmaster3000")+")")
+
 	fmt.Println("\t"+formatCommand("join")+" [room] \t\t\t\t Join a room (example: "+formatInfo("join room_of_horrors")+")")
 	fmt.Println("\t"+formatCommand("leave")+" \t\t\t\t\t\t Leave current room")
 	fmt.Println("\t"+formatCommand("rooms")+" \t\t\t\t\t\t Show list of rooms on server")
+
 	fmt.Println("\t"+formatCommand("players")+" \t\t\t\t\t Show list of players on server")
 	fmt.Println("\t"+formatCommand("party")+" \t\t\t\t\t\t Show list of current players in your party")
 }
@@ -265,6 +290,17 @@ func Process(command string, param string, param2 string) {
 		var item *ItemDetail = nil
 		json.Unmarshal(Fetch("GET",command,param),&item)
 		item.Print()
+
+	case "stats","equip":
+		var list *AttributeList = nil
+		json.Unmarshal(Fetch("GET",command,param),&list)
+		if(list != nil) {
+			list.Print()
+		} else if(command == "stats") {
+			fmt.Println(formatBold("You posses no stats"))
+		} else if(command == "equip") {
+			fmt.Println(formatBoldColor("You must own the item to equip it!",COLOR_RED))
+		}
 
 	case "pickup", "drop", "use":
 		if(param != "") {

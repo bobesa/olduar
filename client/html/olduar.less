@@ -9,6 +9,72 @@ html, body {
 	background-color: #FFF;
 }
 
+//Tabs
+#tabs > span {
+	padding: @itemPadding;
+	cursor: pointer;
+}
+
+//Inventory
+#inventory > .item {
+	display: inline-block;
+	border: 1px solid #CCC;
+	padding: @itemPadding;
+	border-radius: 9px;
+	margin-bottom: 5px;
+	margin-right: 5px;
+	cursor: pointer;
+
+	span {
+		pointer-events: none;
+	}
+
+	.name {
+		font-weight: bold;
+	}
+
+	.desc {
+		font-style: italic;
+	}
+}
+#inspect {
+	pointer-events: none;
+	position: absolute;
+	padding: @itemPadding;
+	border-radius: 9px;
+	border: 1px solid #CCC;
+	background-color: rgba(255,255,255,0.85);
+
+	.name {
+		font-weight: bold;
+	}
+	.type {
+		font-size: 75%;
+		font-weight: bold;
+	}
+	.desc {
+		font-style:italic;
+		color: purple;
+	}
+	.stat {
+		text-transform: capitalize;
+		color: black;
+	}
+	.weight {
+		font-style:italic;
+	}
+	.detail {
+		font-style:italic;
+		font-size: 75%;
+	}
+}
+
+//Buttons
+input[type="button"] {
+	border-radius: 9px;
+	padding: 0 @itemPadding 0 @itemPadding;
+}
+
 //Event log
 #eventLog {
 	height: 100px;
