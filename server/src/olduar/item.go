@@ -39,8 +39,6 @@ func LoadItems() bool {
 		}
 	}
 
-	fmt.Println()
-
 	return len(ItemTemplateDirectory) > 0
 }
 

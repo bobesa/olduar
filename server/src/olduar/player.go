@@ -25,6 +25,7 @@ type Player struct {
 	//Stats
 	Health float64 			`json:"health"`
 	MaxHealth float64 		`json:"health_max"`
+	Money int64	 			`json:"money"`
 	Inventory Inventory		`json:"inventory"`
 	Stats AttributeList		`json:"-"`
 
@@ -226,6 +227,10 @@ func (p *Player) Give(entry string) {
 	}
 }
 
+func (p *Player) GetStats() AttributeList {
+	return p.Stats
+}
+
 func (p *Player) Heal(value float64) {
 	p.Health += value
 	if(p.Health > p.MaxHealth) {
@@ -237,7 +242,12 @@ func (p *Player) Damage(value float64) {
 	p.Health -= value
 	if(p.Health <= 0) {
 		p.Health = 0
+		p.Die()
 	}
+}
+
+func (p *Player) Die() {
+	fmt.Println(p.Name+" died!")
 }
 
 func PlayerByAuthorization(r *http.Request) (*Player,bool) {

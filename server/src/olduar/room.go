@@ -82,6 +82,16 @@ type Response struct {
 	Exits map[string]string		`json:"exits"`
 	Actions map[string]string	`json:"actions"`
 	Items []ResponseItem		`json:"items,omitempty"`
+	Npcs []ResponseNpc			`json:"npcs,omitempty"`
+}
+
+type ResponseNpc struct {
+	Id *string `json:"id"`
+	Name *string `json:"name"`
+	Description *string `json:"desc"`
+	Health float64 `json:"health"`
+	HealthMax float64 `json:"health_max"`
+	Friendly bool `json:"friendly"`
 }
 
 type ResponseItem struct {
@@ -277,11 +287,17 @@ func (room *Room) GetPlayerResponse(player *Player) []byte {
 		Exits: make(map[string]string),
 		Actions: make(map[string]string),
 		Items: make([]ResponseItem,len(room.CurrentLocation.Items)),
+		Npcs: make([]ResponseNpc,len(room.CurrentLocation.Npcs)),
 	}
 
 	//Append items
 	for index, item := range room.CurrentLocation.Items {
 		res.Items[index] = item.GenerateResponse()
+	}
+
+	//Append npcs
+	for index, npc := range room.CurrentLocation.Npcs {
+		res.Npcs[index] = npc.GenerateResponse()
 	}
 
 	//Append history

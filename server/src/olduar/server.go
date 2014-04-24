@@ -24,6 +24,7 @@ type ServerConfig struct {
 
 	DirItems string			`json:"directory_items"`
 	DirLocations string		`json:"directory_locations"`
+	DirCharacters string	`json:"directory_characters"`
 	DirOther string			`json:"directory_other"`
 }
 
@@ -55,7 +56,7 @@ func Run(configFilename string) {
 	rand.Seed(time.Now().Unix())
 
 	//Loading of files etc.
-	if(LoadLocations() && LoadItems()) {
+	if(LoadLocations() && LoadItems() && LoadCharacters()) {
 		//Initialize actions
 		LoadAttributes()
 

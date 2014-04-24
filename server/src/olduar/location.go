@@ -22,6 +22,7 @@ type Location struct {
 	DescriptionShort string 		`json:"desc_short"`
 	Exits LocationExits 			`json:"exits"`
 	Actions map[string]*Action		`json:"actions,omitempty"`
+	Npcs []*Npc						`json:"npcs,omitempty"`
 	Items Inventory					`json:"items,omitempty"`
 	Visited bool					`json:"visited"`
 	Current bool					`json:"current"`
@@ -146,8 +147,6 @@ func LoadLocations() bool {
 		return false
 	}
 
-	fmt.Println()
-
 	return true
 
 }
@@ -182,11 +181,27 @@ func CreateLocationFromTemplate(template *LocationTemplate) *Location {
 			continue
 		}
 		if(item.Id != "") {
-			finalItem := ItemTemplateDirectory[item.Id].GenerateItem()
-			if(finalItem != nil) {
-				loc.Items = append(loc.Items,finalItem)
+			entry := ItemTemplateDirectory[item.Id]
+			if(entry != nil) {
+				loc.Items = append(loc.Items,entry.GenerateItem())
 			}
 		} else if(item.Group != "") {
+			//Give any template from item group
+		}
+	}
+
+	//Generate characters
+	loc.Npcs = make([]*Npc,0)
+	for _, npc := range template.Npcs {
+		if(npc.Chance > 0 && npc.Chance < rand.Float64()) {
+			continue
+		}
+		if(npc.Id != "") {
+			entry, found := CharacterTemplateDirectory[npc.Id]
+			if(found) {
+				loc.Npcs = append(loc.Npcs,entry.MakeInstance())
+			}
+		} else if(npc.Group != "") {
 			//Give any template from item group
 		}
 	}
@@ -216,8 +231,8 @@ func CreateLocationFromEntry(entry string) *Location {
 var LocationTemplateDirectoryEntries = make(map[string]*LocationTemplate)
 var LocationTemplateDirectoryRegions = make(map[string]LocationTemplates)
 
-type LocationItemTemplates []*LocationItemTemplate
-type LocationItemTemplate struct {
+type LocationEntryTemplates []*LocationEntryTemplate
+type LocationEntryTemplate struct {
 	Id string 		`json:"id"`
 	Group string 	`json:"group"`
 	Chance float64	`json:"chance"`
@@ -225,12 +240,13 @@ type LocationItemTemplate struct {
 
 type LocationTemplates []*LocationTemplate
 type LocationTemplate struct {
-	Id string 					`json:"id"`
-	Name string 				`json:"name"`
-	Region string				`json:"region,omitempty"`
-	Description string 			`json:"desc"`
-	DescriptionShort string 	`json:"desc_short"`
-	Actions Actions				`json:"actions,omitempty"`
-	Exits LocationExits			`json:"exits,omitempty"`
-	Items LocationItemTemplates `json:"items"`
+	Id string 						`json:"id"`
+	Name string 					`json:"name"`
+	Region string					`json:"region,omitempty"`
+	Description string 				`json:"desc"`
+	DescriptionShort string 		`json:"desc_short"`
+	Actions Actions					`json:"actions,omitempty"`
+	Exits LocationExits				`json:"exits,omitempty"`
+	Items LocationEntryTemplates 	`json:"items"`
+	Npcs LocationEntryTemplates 	`json:"npcs"`
 }

@@ -6,5 +6,6 @@
 
     "directory_items":"db/items",
     "directory_locations":"db/locations",
+	"directory_characters":"db/characters",
     "directory_other":"db/other"
 }

@@ -1,0 +1,14 @@
+[
+	{
+		"id":"boar",
+		"name":"Boar",
+		"health_max":50,
+		"stats":{
+			"damage":{"min":10,"max":15},
+			"defense":{"min":10,"max":10}
+		},
+		"drops":[
+			{"id":"meat","chance":0.5}
+		]
+	}
+]
