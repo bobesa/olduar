@@ -89,3 +89,19 @@ func (npc *Npc) Damage(value float64) {
 func (npc *Npc) Die() {
 	fmt.Println(npc.Name+" died!")
 }
+
+func (npc *Npc) IsAlive() bool {
+	return npc.Health > 0.0
+}
+
+func (npc *Npc) GetName() string {
+	return npc.Name
+}
+
+func (npc *Npc) GetTeam() CombatTeam {
+	//TODO: implement teams (currently player + friendly npc is 0, enemy npc is 1)
+	if(npc.Friendly) {
+		return 0
+	}
+	return 1
+}

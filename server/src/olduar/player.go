@@ -250,6 +250,19 @@ func (p *Player) Die() {
 	fmt.Println(p.Name+" died!")
 }
 
+func (p *Player) IsAlive() bool {
+	return p.Health > 0.0
+}
+
+func (p *Player) GetName() string {
+	return p.Name
+}
+
+func (p *Player) GetTeam() CombatTeam {
+	//TODO: implement teams (currently player + friendly npc is 0, enemy npc is 1)
+	return 0
+}
+
 func PlayerByAuthorization(r *http.Request) (*Player,bool) {
 	//Authentication
 	authToken, found := r.Header["Authorization"]
