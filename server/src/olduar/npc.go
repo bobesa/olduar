@@ -39,6 +39,7 @@ func LoadCharacters() bool {
 
 type Npc struct {
 	Id string 				`json:"id"`
+	Guid GUID				`json:"guid"`
 	Name string 			`json:"name"`
 	Description string 		`json:"desc"`
 	Stats AttributeList		`json:"stats"`

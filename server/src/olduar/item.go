@@ -166,6 +166,7 @@ func (i *ItemTemplate) Prepare() {
 
 type Item struct {
 	Id string						`json:"id"`
+	Guid GUID						`json:"guid"`
 	Attributes *ItemTemplate		`json:"-"`
 	Actions Actions					`json:"actions,omitempty"`
 	Equipped bool					`json:"equipped"`
