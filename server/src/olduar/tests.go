@@ -5,7 +5,7 @@ import (
 )
 
 func RunTests() {
-	//return //Comment/Remove this to run tests
+	return //Comment/Remove this to run tests
 	fmt.Println("\nRunning tests")
 	testResult("Combat",testCombat())
 	fmt.Println()
