@@ -133,7 +133,7 @@ func Run(configFilename string) {
 								player, found = ActivePlayersByUsername[strings.ToLower(authData[0])]
 								if (!found) {
 									//Register user
-									player = &Player{Username:authData[0], Password:authData[1], Name:authData[0]}
+									player = &Player{Username:authData[0], Password:authData[1], Name:authData[0], Health: 50, MaxHealth: 50}
 									player.Activate()
 									w.Write([]byte("true"))
 								} else {
@@ -156,7 +156,7 @@ func Run(configFilename string) {
 				//Process command
 				w.Header().Set("Content-Type", "application/json")
 				switch(params[0]){
-				case "save", "look", "do", "go", "inventory", "inspect", "pickup", "drop", "use", "equip", "stats":
+				case "save", "look", "do", "go", "inventory", "inspect", "pickup", "drop", "use", "equip", "stats", "attack", "defend", "ability":
 					if(player.Room == nil) {
 						w.Write([]byte("null"))
 						return

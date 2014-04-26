@@ -36,10 +36,29 @@ func MakeCombatQueue(room *Room) *CombatQueue {
 }
 
 func (q *CombatQueue) Add(combatant Fighter) {
-	q.combatants[combatant] = combatant.GetTeam()
-	if(q.InProgress) {
-		q.recomputeQueue()
+	_, found := q.combatants[combatant]
+	if(!found) {
+		q.combatants[combatant] = combatant.GetTeam()
+		if(q.InProgress) {
+			q.recomputeQueue()
+		}
 	}
+}
+
+func (q *CombatQueue) Available() bool {
+	//Check team status
+	teams := make(map[CombatTeam]int)
+	for combatant, team := range q.combatants {
+		if(combatant.IsAlive()) {
+			teams[team]++
+		}
+	}
+
+	//If only last team is standing - combat ends
+	if(len(teams) <= 1) {
+		return false
+	}
+	return true
 }
 
 func (q *CombatQueue) Start() {
@@ -131,18 +150,10 @@ func (q *CombatQueue) NextTurn() {
 			q.queuePosition = 0
 		}
 
-		//Check team status
-		teams := make(map[CombatTeam]int)
-		for combatant, team := range q.combatants {
-			if(combatant.IsAlive()) {
-				teams[team]++
-			}
-		}
-
-		//If only last team is standing - combat ends
-		if(len(teams) <= 1) {
+		if(!q.Available()) {
 			q.End()
 		}
+
 	}
 }
 

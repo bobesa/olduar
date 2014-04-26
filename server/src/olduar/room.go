@@ -130,6 +130,7 @@ type Room struct {
 	queue chan *Command
 	voting bool
 	votingTime time.Time
+	combat *CombatQueue
 }
 
 func (room *Room) Save() {
@@ -173,6 +174,11 @@ func (room *Room) cycleLocations(location *Location) {
 	}
 }
 
+func (room *Room) GetEnemy(id string, unwantedTeam CombatTeam) Fighter {
+	//TODO: implement
+	return nil
+}
+
 func (room *Room) Prepare() {
 	//Put room to list of rooms
 	AllRooms[room.Id] = room
@@ -185,6 +191,7 @@ func (room *Room) Prepare() {
 	//Prepare variables
 	room.queue = make(chan *Command,0)
 	room.voting = false
+	room.combat = MakeCombatQueue(room)
 
 	//Message worker
 	go func(){
@@ -199,6 +206,22 @@ func (room *Room) Prepare() {
 
 			//Process commands
 			switch(cmd.Command) {
+			case "attack", "defend":
+				if(room.combat.InProgress && room.combat.GetCurrentFighter() == cmd.Player) {
+					enemy := room.GetEnemy(cmd.Parameter,cmd.Player.GetTeam())
+					if(enemy != nil && cmd.Command == "attack") {
+						room.combat.Attack(enemy)
+					} else if(enemy != nil && cmd.Command == "defend") {
+						room.combat.Defend()
+					}
+
+				} else {
+					resp = []byte("null")
+				}
+
+			case "ability": //TODO: Implement abilities
+				resp = []byte("null")
+
 			case "save":
 				room.Save()
 				resp = []byte("null")
@@ -280,23 +303,22 @@ func (room *Room) Tell(str string, player *Player) {
 func (room *Room) GetPlayerResponse(player *Player) []byte {
 	from := player.LastResponseId
 
+	//Response
 	res := Response{
 		Name: room.CurrentLocation.Name,
 		Description: room.CurrentLocation.Description,
 		History: make(MessageObjects,0),
 		Exits: make(map[string]string),
 		Actions: make(map[string]string),
-		Items: make([]ResponseItem,len(room.CurrentLocation.Items)),
+		Items: nil,
 		Npcs: make([]ResponseNpc,len(room.CurrentLocation.Npcs)),
 	}
 
-	//Append items
-	for index, item := range room.CurrentLocation.Items {
-		res.Items[index] = item.GenerateResponse()
-	}
-
-	//Append npcs
+	//Append npcs + Combat check
 	for index, npc := range room.CurrentLocation.Npcs {
+		if(!npc.Friendly && npc.IsAlive()) {
+			room.combat.Add(npc)
+		}
 		res.Npcs[index] = npc.GenerateResponse()
 	}
 
@@ -308,18 +330,33 @@ func (room *Room) GetPlayerResponse(player *Player) []byte {
 		}
 	}
 
-	//Append exits
-	for _, exit := range room.CurrentLocation.Exits {
-		res.Exits[exit.Id] = exit.Target.DescriptionShort
-	}
-	if(room.CurrentLocation.Parent != nil) {
-		res.Exits["back"] = room.CurrentLocation.Parent.DescriptionShort
+	if(!room.combat.InProgress && room.combat.Available()) {
+		room.combat.Start()
 	}
 
-	//Append actions
-	for _, action := range room.CurrentLocation.Actions {
-		if(action.Charges != 0) {
-			res.Actions[action.Id] = action.Description
+	if(room.combat.InProgress) {
+		//TODO: Append combat
+
+	} else {
+		//Append items
+		res.Items = make([]ResponseItem,len(room.CurrentLocation.Items))
+		for index, item := range room.CurrentLocation.Items {
+			res.Items[index] = item.GenerateResponse()
+		}
+
+		//Append exits
+		for _, exit := range room.CurrentLocation.Exits {
+			res.Exits[exit.Id] = exit.Target.DescriptionShort
+		}
+		if(room.CurrentLocation.Parent != nil) {
+			res.Exits["back"] = room.CurrentLocation.Parent.DescriptionShort
+		}
+
+		//Append actions
+		for _, action := range room.CurrentLocation.Actions {
+			if(action.Charges != 0) {
+				res.Actions[action.Id] = action.Description
+			}
 		}
 	}
 
@@ -482,4 +519,5 @@ func (room *Room) Join(player *Player) {
 	room.Players = append(room.Players,player)
 	player.Room = room
 	player.LastResponseId = room.LastMessageId
+	room.combat.Add(player)
 }
