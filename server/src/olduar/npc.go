@@ -90,6 +90,18 @@ func (npc *Npc) Die() {
 	fmt.Println(npc.Name+" died!")
 }
 
+func (npc *Npc) GetId() string {
+	return npc.Id
+}
+
+func (npc *Npc) GetGUID() GUID {
+	return npc.Guid
+}
+
+func (npc *Npc) IsPlayer() bool {
+	return false
+}
+
 func (npc *Npc) IsAlive() bool {
 	return npc.Health > 0.0
 }

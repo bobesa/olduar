@@ -12,7 +12,10 @@ type Fighter interface {
 	Die()
 	GetTeam() CombatTeam
 	GetName() string
+	GetId() string
+	GetGUID() GUID
 	IsAlive() bool
+	IsPlayer() bool
 }
 
 type CombatTeam int8
@@ -186,4 +189,20 @@ func (q *CombatQueue) Attack(enemy Fighter) bool {
 	//Advance to next turn
 	q.NextTurn()
 	return true
+}
+
+func (q *CombatQueue) MakeAutoTurn() {
+	attacker := q.GetCurrentFighter();
+	if(attacker.IsPlayer()) {
+		q.Defend() //Player will always defend only on auto-turn (which is timeout in this case)
+
+	} else {
+		for combatant, team := range q.combatants {
+			if(attacker.GetTeam() != team) {
+				//TODO: Actually think about what you do
+				q.Attack(combatant)
+				return
+			}
+		}
+	}
 }

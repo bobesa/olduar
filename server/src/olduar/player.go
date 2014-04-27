@@ -21,6 +21,7 @@ type Player struct {
 	Username string			`json:"username"`
 	Password string			`json:"password"`
 	Name string 			`json:"name"`
+	Guid GUID				`json:"-"`
 
 	//Stats
 	Health float64 			`json:"health"`
@@ -248,6 +249,18 @@ func (p *Player) Damage(value float64) {
 
 func (p *Player) Die() {
 	fmt.Println(p.Name+" died!")
+}
+
+func (p *Player) GetId() string {
+	return p.Username
+}
+
+func (p *Player) GetGUID() GUID {
+	return p.Guid
+}
+
+func (p *Player) IsPlayer() bool {
+	return true
 }
 
 func (p *Player) IsAlive() bool {

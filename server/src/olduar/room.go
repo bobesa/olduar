@@ -83,6 +83,13 @@ type Response struct {
 	Actions map[string]string	`json:"actions"`
 	Items []ResponseItem		`json:"items,omitempty"`
 	Npcs []ResponseNpc			`json:"npcs,omitempty"`
+	Combat *ResponseCombat		`json:"combat,omitempty"`
+}
+
+type ResponseCombat struct {
+	YourTurn bool 		`json:"your_turn"`
+	OnTurnId string 	`json:"id"`
+	OnTurnGuid GUID 	`json:"guid"`
 }
 
 type ResponseNpc struct {
@@ -175,7 +182,18 @@ func (room *Room) cycleLocations(location *Location) {
 }
 
 func (room *Room) GetEnemy(id string, unwantedTeam CombatTeam) Fighter {
-	//TODO: implement
+	if(unwantedTeam != 0) {
+		for _, player := range room.Players {
+			if(player.Username == id && player.GetTeam() != unwantedTeam) {
+				return player
+			}
+		}
+	}
+	for _, npc := range room.CurrentLocation.Npcs {
+		if(npc.Id == id && npc.GetTeam() != unwantedTeam) {
+			return npc
+		}
+	}
 	return nil
 }
 
@@ -204,6 +222,13 @@ func (room *Room) Prepare() {
 				room.CheckVoting()
 			}
 
+			//Auto-combat
+			if(room.combat.InProgress) {
+				for room.combat.Available() && !room.combat.GetCurrentFighter().IsPlayer() {
+					room.combat.MakeAutoTurn()
+				}
+			}
+
 			//Process commands
 			switch(cmd.Command) {
 			case "attack", "defend":
@@ -214,10 +239,8 @@ func (room *Room) Prepare() {
 					} else if(enemy != nil && cmd.Command == "defend") {
 						room.combat.Defend()
 					}
-
-				} else {
-					resp = []byte("null")
 				}
+				resp = room.GetPlayerResponse(cmd.Player)
 
 			case "ability": //TODO: Implement abilities
 				resp = []byte("null")
@@ -312,6 +335,7 @@ func (room *Room) GetPlayerResponse(player *Player) []byte {
 		Actions: make(map[string]string),
 		Items: nil,
 		Npcs: make([]ResponseNpc,len(room.CurrentLocation.Npcs)),
+		Combat: nil,
 	}
 
 	//Append npcs + Combat check
@@ -335,7 +359,12 @@ func (room *Room) GetPlayerResponse(player *Player) []byte {
 	}
 
 	if(room.combat.InProgress) {
-		//TODO: Append combat
+		combatant := room.combat.GetCurrentFighter()
+		res.Combat = &ResponseCombat{
+			YourTurn: combatant == player,
+			OnTurnGuid: combatant.GetGUID(),
+			OnTurnId: combatant.GetId(),
+		}
 
 	} else {
 		//Append items
