@@ -46,7 +46,8 @@ var request = function(method,command,value,callback){
 	domLocationItems,
 	listExits = {},
 	listActions = {},
-	listItems = {};
+	listItems = {},
+	listNpcs = {};
 
 Array.prototype.hasOwnItemInPath = function(match,path){
 	var len = this.length;
@@ -165,7 +166,11 @@ var parseLocationData = function(data){
 			entry.dom.addEventListener("click",function(){
 				request("get","pickup/"+entry.id,parseLocationData);
 			});
-			//TODO: Inspection on hover
+		});
+		updateDomList(document.getElementById("locationNpcs"),listNpcs,data.npcs,function(entry){
+			entry.dom.addEventListener("click",function(){
+				request("post","attack/"+entry.id,parseLocationData);
+			});
 		});
 	} else {
 		//Show room selection
@@ -197,6 +202,9 @@ var parseLocationData = function(data){
 					dom.innerHTML = '<span class="name" style="color:'+getQualityColor(item.quality)+'">' + item.name + "</span><br>" + '<span class="desc">'+item.desc+'</span>';
 					if(item.usable) dom.addEventListener("click",function(){
 						request("post","use/"+item.id,parseLocationData);
+					});
+					if(item.type != "consumable" && item.type != "") dom.addEventListener("click",function(){
+						request("post","equip/"+item.id,parseLocationData);
 					});
 					domInv.appendChild(dom);
 
