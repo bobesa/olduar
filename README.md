@@ -67,6 +67,12 @@ If invalid __{item}__ is specified __null__ is returned
 
 Otherwise return is the same as `/look`
 
+### POST /api/defend
+Return is always the same as `/look`
+
+### POST /api/attack/{target}
+Return is always the same as `/look`
+
 ### GET /api/inventory
 Returns array of items in player's inventory
 ```json
