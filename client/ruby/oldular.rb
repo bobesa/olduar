@@ -15,9 +15,8 @@ action = ARGV[0]
 help unless action
 
 id = ARGV[1] if ARGV[1]
-url = "#{server}/api/room/#{action}" unless id
-url = "#{server}/api/room/#{action}/#{id}" if id
-url = "#{server}/api/#{action}/#{id}" if action =='join'
+url = "#{server}/api/#{action}" unless id
+url = "#{server}/api/#{action}/#{id}" if id
 
 auth = 'Basic ' + Base64.encode64( 'test:test2' ).chomp
 
