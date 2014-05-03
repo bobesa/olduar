@@ -145,9 +145,10 @@ var parseLocationData = function(data){
 		//Process location data
 		domLocationName.innerHTML = data.name;
 		domLocationDescription.innerHTML = data.desc;
-		if(data.history) data.history.forEach(function(event){
+		if(data.log) data.log.forEach(function(event){
+			//TODO: Handle text color by event .type
 			var dom = document.createElement("div");
-			dom.innerHTML = event.text;
+			dom.innerHTML = event.data;
 			domEventLog.appendChild(dom);
 			domEventLog.scrollTop = domEventLog.scrollHeight;
 		});
