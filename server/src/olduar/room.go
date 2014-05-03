@@ -56,17 +56,6 @@ func CreateRoomFromSave(filename string) *Room {
 	return nil
 }
 
-// Message Object
-
-type MessageObjects []*MessageObject
-
-type MessageObject struct {
-	Id int64					`json:"id"`
-	Message string				`json:"text"`
-	IgnoredPlayer *Player		`json:"-"`
-	OnlyForPlayer *Player		`json:"-"`
-}
-
 // Command object
 
 type Command struct {
@@ -78,7 +67,7 @@ type Command struct {
 type Response struct {
 	Name string 				`json:"name"`
 	Description string 			`json:"desc"`
-	History MessageObjects 		`json:"history"`
+	Log LogObjects		 		`json:"log"`
 	Exits map[string]string		`json:"exits"`
 	Actions map[string]string	`json:"actions"`
 	Items []ResponseItem		`json:"items,omitempty"`
@@ -131,8 +120,6 @@ type Room struct {
 	CurrentLocation *Location 	`json:"-"`
 	StartingLocation *Location 	`json:"location"`
 	Players Players				`json:"-"`
-	History MessageObjects		`json:"-"`
-	LastMessageId int64			`json:"message_count"`
 
 	queue chan *Command
 	voting bool
@@ -305,32 +292,32 @@ func (room *Room) Prepare() {
 	fmt.Println("Game room \""+room.Id+"\" is ready")
 }
 
-func (room *Room) AddMessage(message *MessageObject) {
-	room.LastMessageId++
-	message.Id = room.LastMessageId
-	room.History = append(room.History, message)
-}
-
 func (room *Room) TellAll(str string) {
-	room.AddMessage(&MessageObject{Message:str})
+	msg := &LogObject{Type:LOG_TYPE_MESSAGE,Data:str}
+	for _, player := range room.Players {
+		player.Log(msg)
+	}
 }
 
-func (room *Room) TellAllExcept(str string, player *Player) {
-	room.AddMessage(&MessageObject{Message:str,IgnoredPlayer:player})
+func (room *Room) TellAllExcept(str string, ignoredPlayer *Player) {
+	msg := &LogObject{Type:LOG_TYPE_MESSAGE,Data:str}
+	for _, player := range room.Players {
+		if(player != ignoredPlayer) {
+			player.Log(msg)
+		}
+	}
 }
 
 func (room *Room) Tell(str string, player *Player) {
-	room.AddMessage(&MessageObject{Message:str,OnlyForPlayer:player})
+	player.Tell(str)
 }
 
 func (room *Room) GetPlayerResponse(player *Player) []byte {
-	from := player.LastResponseId
-
 	//Response
 	res := Response{
 		Name: room.CurrentLocation.Name,
 		Description: room.CurrentLocation.Description,
-		History: make(MessageObjects,0),
+		Log: player.GetLog(),
 		Exits: make(map[string]string),
 		Actions: make(map[string]string),
 		Items: nil,
@@ -346,14 +333,7 @@ func (room *Room) GetPlayerResponse(player *Player) []byte {
 		res.Npcs[index] = npc.GenerateResponse()
 	}
 
-	//Append history
-	for _, entry := range room.History {
-		if(entry.Id > from && ((entry.IgnoredPlayer == nil && entry.OnlyForPlayer == nil) || (entry.IgnoredPlayer != player && entry.OnlyForPlayer == nil) || (entry.IgnoredPlayer == nil && entry.OnlyForPlayer == player))) {
-			res.History = append(res.History,entry)
-			player.LastResponseId = entry.Id
-		}
-	}
-
+	//Combat
 	if(!room.combat.InProgress && room.combat.Available()) {
 		room.combat.Start()
 	}
@@ -547,6 +527,5 @@ func (room *Room) Leave(player *Player) {
 func (room *Room) Join(player *Player) {
 	room.Players = append(room.Players,player)
 	player.Room = room
-	player.LastResponseId = room.LastMessageId
 	room.combat.Add(player)
 }

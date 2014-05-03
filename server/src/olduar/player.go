@@ -10,6 +10,22 @@ import (
 	"strings"
 )
 
+const (
+	LOG_TYPE_MESSAGE = iota
+	LOG_TYPE_EMOTE = iota
+	LOG_TYPE_COMBAT = iota
+)
+
+// Message Object
+
+type LogObjects []*LogObject
+type LogObject struct {
+	Type int				`json:"type"`
+	Data string				`json:"data"`
+}
+
+//Player
+
 var ActivePlayersCount int = 0
 var ActivePlayers map[string]*Player = make(map[string]*Player)
 var ActivePlayersByUsername map[string]*Player = make(map[string]*Player)
@@ -22,6 +38,7 @@ type Player struct {
 	Password string			`json:"password"`
 	Name string 			`json:"name"`
 	Guid GUID				`json:"-"`
+	log LogObjects
 
 	//Stats
 	Health float64 			`json:"health"`
@@ -34,7 +51,6 @@ type Player struct {
 	AuthToken string		`json:"-"`
 	VotedLocation *Location `json:"-"`
 	Room *Room 				`json:"-"`
-	LastResponseId int64	`json:"-"`
 	LastResponse time.Time	`json:"-"`
 
 	//Equip Slots
@@ -45,13 +61,30 @@ func LoadAllPlayers() {
 	files, err := ioutil.ReadDir(MainServerConfig.DirSave+"/players");
 	if(err == nil) {
 		for _, file := range files {
-			player := &Player{}
+			player := &Player{
+				log: make(LogObjects,0),
+			}
 			player.Load(MainServerConfig.DirSave+"/players/" + file.Name())
 		}
 		fmt.Println("Loaded",len(ActivePlayers),"players")
 	} else {
 		fmt.Println("Unable to load players \""+MainServerConfig.DirSave+"/players\"")
 	}
+}
+
+//Returns current history and remove all returned items from log
+func (player *Player) GetLog() LogObjects {
+	history := player.log
+	player.log = make(LogObjects,0)
+	return history
+}
+
+func (player *Player) Log(entry *LogObject) {
+	player.log = append(player.log,entry)
+}
+
+func (player *Player) Tell(message string) {
+	player.Log(&LogObject{Type:LOG_TYPE_MESSAGE,Data:message})
 }
 
 func (player *Player) Load(filename string) {

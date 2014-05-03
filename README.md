@@ -23,7 +23,9 @@ Returns current location view (together with items, npcs, exits and actions)
 {
     "name": "Lake",
     "desc": "You are looking at the beautiful lake full of fish.",
-    "history": [],
+    "log": [
+        {"type":"emote","data":"You caught a fish"}
+    ],
     "exits": {
         "back": "a pub",
         "east": "a lake",
