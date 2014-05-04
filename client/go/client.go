@@ -39,9 +39,9 @@ var Username, Password string = "", ""
 
 // Types
 
-type Message struct {
-	Id int64					`json:"id"`
-	Message string				`json:"text"`
+type LogEvent struct {
+	Type int					`json:"type"`
+	Data string					`json:"data"`
 }
 
 type Inventory []Item
@@ -76,20 +76,49 @@ func (item *ItemDetail) Print() {
 	}
 }
 
+type Npcs []Npc
+type Npc struct {
+	Id string 					`json:"id"`
+	Name string 				`json:"name"`
+	Description string 			`json:"desc"`
+	Health float64				`json:"health`
+	HealthMax float64			`json:"health_max`
+	Friendly bool				`json:"friendly`
+}
+
+func (npc *Npc) Print() {
+	if(!npc.Friendly) {
+		fmt.Println(formatBold(npc.Name + " (" + formatColor(fmt.Sprint(npc.Health),COLOR_RED) + "/" + formatColor(fmt.Sprint(npc.HealthMax),COLOR_RED) + ")") )
+	} else {
+		fmt.Println(formatBold(npc.Name))
+	}
+}
+
+func (npcs Npcs) InCombat() bool {
+	for _, npc := range npcs {
+		if(!npc.Friendly) {
+			return true
+		}
+	}
+	return false
+}
+
 type Room struct {
 	Name string 				`json:"name"`
 	Description string 			`json:"desc"`
-	History []*Message	 		`json:"history"`
+	Log []*LogEvent		 		`json:"log"`
 	Exits map[string]string		`json:"exits"`
 	Actions map[string]string	`json:"actions"`
 	Items Inventory				`json:"items"`
+	Npcs Npcs					`json:"npcs"`
 }
 
 func (room *Room) Print() {
 	//History events
-	if(len(room.History)>0) {
-		for _, event := range room.History {
-			fmt.Println(event.Message)
+	if(len(room.Log)>0) {
+		for _, event := range room.Log {
+			//TODO: Handle color by event .Type
+			fmt.Println(event.Data)
 		}
 		PrintLine()
 	}
@@ -158,7 +187,36 @@ func (room *Room) Print() {
 		}
 		fmt.Println();
 	} else {
-		fmt.Println("There is no exit from this place")
+		if(room.Npcs.InCombat()) {
+			fmt.Println("There is combat going on around you")
+			for _, npc := range room.Npcs {
+				npc.Print()
+			}
+		} else {
+			fmt.Println("There is no exit from this place")
+		}
+	}
+
+
+	//Npcs
+	if(!room.Npcs.InCombat()) {
+		count = len(room.Npcs)
+		if(count > 0) {
+			if(count == 1) {
+				fmt.Print("There is only 1 npc: ")
+			} else {
+				fmt.Print("Npcs around you are: ")
+			}
+			for index, npc := range room.Npcs {
+				fmt.Print(formatCommand(npc.Id)+" ("+npc.Name+")")
+				if(count-2 == index) {
+					fmt.Print(" & ")
+				} else if(count-1 != index) {
+					fmt.Print(", ")
+				}
+			}
+			fmt.Println();
+		}
 	}
 }
 
