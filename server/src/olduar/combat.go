@@ -3,6 +3,7 @@ package olduar
 import (
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 type Fighter interface {
@@ -35,6 +36,18 @@ func MakeCombatQueue(room *Room) *CombatQueue {
 		queue: make([]Fighter,0),
 		queuePosition: 0,
 		InProgress: false,
+	}
+}
+
+func (q *CombatQueue) Log(attacker Fighter, strPlayer string, strParty string) {
+	msgPlayer := &LogObject{Type:LOG_TYPE_COMBAT,Data:strPlayer}
+	msgParty := &LogObject{Type:LOG_TYPE_COMBAT,Data:strParty}
+	for _, player := range q.room.Players {
+		if(player == attacker) {
+			player.Log(msgPlayer)
+		} else {
+			player.Log(msgParty)
+		}
 	}
 }
 
@@ -162,7 +175,8 @@ func (q *CombatQueue) NextTurn() {
 
 func (q *CombatQueue) Defend() {
 	if(q.InProgress) {
-		fmt.Println(q.GetCurrentFighter().GetName() + "> Defend")
+		defender := q.GetCurrentFighter()
+		q.Log(defender,"You are defending",defender.GetName() + " is defending")
 		q.NextTurn()
 	}
 }
@@ -182,7 +196,12 @@ func (q *CombatQueue) Attack(enemy Fighter) bool {
 
 	//Do actual attack
 	damage, heal := attacker.GetStats().Attack(enemy.GetStats(),q.room)
-	fmt.Println(attacker.GetName() + "> Attacked ("+enemy.GetName()+") for",damage," damage")
+	dmgStr := strconv.FormatFloat(damage,'f',0,64)
+	if(attacker.IsPlayer()) {
+		q.Log(attacker,"You attacked " + enemy.GetName() + " for " + dmgStr + " damage",attacker.GetName() + " attacked "+enemy.GetName()+" for " + dmgStr + " damage")
+	} else {
+		q.Log(enemy,attacker.GetName() + " attacked you for " + dmgStr + " damage",attacker.GetName() + " attacked "+enemy.GetName()+" for " + dmgStr + " damage")
+	}
 	attacker.Heal(heal)
 	enemy.Damage(damage)
 

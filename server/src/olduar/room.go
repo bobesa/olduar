@@ -223,7 +223,7 @@ func (room *Room) Prepare() {
 					enemy := room.GetEnemy(cmd.Parameter,cmd.Player.GetTeam())
 					if(enemy != nil && cmd.Command == "attack") {
 						room.combat.Attack(enemy)
-					} else if(enemy != nil && cmd.Command == "defend") {
+					} else if(cmd.Command == "defend") {
 						room.combat.Defend()
 					}
 				}
