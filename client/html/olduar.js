@@ -205,6 +205,9 @@ var parseLocationData = function(data){
 }, getQualityColor = function(quality) {
 	return "#000";
 
+}, updatePlayerStats = function(stats){
+	//TODO: Player stats & Equipments screen
+
 },toggleTabs = function(wanted){
 	//Show wanted tab - hide others
 	["tabLocation","tabInventory","tabRooms","tabAccount"].forEach(function(name){ document.getElementById(name).style.display = name==wanted?"block":"none"; });
@@ -223,7 +226,7 @@ var parseLocationData = function(data){
 						request("post","use/"+item.id,parseLocationData);
 					});
 					if(item.type != "consumable" && item.type != "") dom.addEventListener("click",function(){
-						request("post","equip/"+item.id,parseLocationData);
+						request("post","equip/"+item.id,updatePlayerStats);
 					});
 					domInv.appendChild(dom);
 
@@ -234,6 +237,7 @@ var parseLocationData = function(data){
 						domInspect.style.top = (e.clientY+20)+"px";
 						domInspect.style.display = "block";
 						domInspect.style.innerHTML = "Loading...";
+						//TODO: Caching of inspects on client
 						request("GET","inspect/"+item.id,function(detail){
 							var str = '<div class="name" style="color:'+getQualityColor(item.quality)+'">'+detail.name+'</div>'; //TODO: Quality affect name color
 							if(detail.type != "") str += '<div class="type">'+SlotTypes[detail.type]+(detail.class != "" && (detail.type == "consumable" || detail.type == "1hand" || detail.type == "2hand") ? " " + detail.class : "")+'</div>';
