@@ -272,23 +272,25 @@ func (p *Player) GetStats() AttributeList {
 	return p.Stats
 }
 
-func (p *Player) Heal(value float64) {
+func (p *Player) Heal(value float64, log *CombatQueue) {
 	p.Health += value
 	if(p.Health > p.MaxHealth) {
 		p.Health = p.MaxHealth
 	}
 }
 
-func (p *Player) Damage(value float64) {
+func (p *Player) Damage(value float64, log *CombatQueue, attacker Fighter) {
 	p.Health -= value
 	if(p.Health <= 0) {
 		p.Health = 0
-		p.Die()
+		p.Die(log,attacker)
 	}
 }
 
-func (p *Player) Die() {
-	fmt.Println(p.Name+" died!")
+func (p *Player) Die(log *CombatQueue, attacker Fighter) {
+	if(log != nil) {
+		log.Log(p,"You have been wounded by "+attacker.GetName(),p.GetName() + " has been wounded by " + attacker.GetName())
+	}
 }
 
 func (p *Player) GetId() string {

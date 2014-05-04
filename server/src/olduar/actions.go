@@ -136,9 +136,9 @@ func (a *ActionTypeEffect) Do(player *Player, room *Room, action *Action) {
 	//Do effect
 	switch(a.Type){
 	case "damage":
-		player.Damage(a.Value)
+		player.Damage(a.Value,nil,nil)
 	case "heal":
-		player.Heal(a.Value)
+		player.Heal(a.Value,nil)
 	}
 	//Send messages
 	if(a.MessageAll != "") {

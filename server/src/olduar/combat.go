@@ -8,9 +8,9 @@ import (
 
 type Fighter interface {
 	GetStats() AttributeList
-	Damage(float64)
-	Heal(float64)
-	Die()
+	Damage(float64, *CombatQueue, Fighter)
+	Heal(float64, *CombatQueue)
+	Die(*CombatQueue, Fighter)
 	GetTeam() CombatTeam
 	GetName() string
 	GetId() string
@@ -59,6 +59,13 @@ func (q *CombatQueue) Add(combatant Fighter) {
 			q.recomputeQueue()
 		}
 	}
+}
+
+func (q *CombatQueue) PlayerCanDoAction(player *Player) bool {
+	if(!q.InProgress || player == q.GetCurrentFighter()) {
+		return true
+	}
+	return false
 }
 
 func (q *CombatQueue) Available() bool {
@@ -196,14 +203,16 @@ func (q *CombatQueue) Attack(enemy Fighter) bool {
 
 	//Do actual attack
 	damage, heal := attacker.GetStats().Attack(enemy.GetStats(),q.room)
+
 	dmgStr := strconv.FormatFloat(damage,'f',0,64)
 	if(attacker.IsPlayer()) {
 		q.Log(attacker,"You attacked " + enemy.GetName() + " for " + dmgStr + " damage",attacker.GetName() + " attacked "+enemy.GetName()+" for " + dmgStr + " damage")
 	} else {
 		q.Log(enemy,attacker.GetName() + " attacked you for " + dmgStr + " damage",attacker.GetName() + " attacked "+enemy.GetName()+" for " + dmgStr + " damage")
 	}
-	attacker.Heal(heal)
-	enemy.Damage(damage)
+	
+	attacker.Heal(heal,q)
+	enemy.Damage(damage,q,attacker)
 
 	//Advance to next turn
 	q.NextTurn()

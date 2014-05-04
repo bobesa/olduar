@@ -71,23 +71,25 @@ func (npc *Npc) GetStats() AttributeList {
 	return npc.Stats
 }
 
-func (npc *Npc) Heal(value float64) {
+func (npc *Npc) Heal(value float64, log *CombatQueue) {
 	npc.Health += value
 	if(npc.Health > npc.MaxHealth) {
 		npc.Health = npc.MaxHealth
 	}
 }
 
-func (npc *Npc) Damage(value float64) {
+func (npc *Npc) Damage(value float64, log *CombatQueue, attacker Fighter) {
 	npc.Health -= value
 	if(npc.Health <= 0) {
 		npc.Health = 0
-		npc.Die()
+		npc.Die(log,attacker)
 	}
 }
 
-func (npc *Npc) Die() {
-	fmt.Println(npc.Name+" died!")
+func (npc *Npc) Die(log *CombatQueue, attacker Fighter) {
+	if(log != nil) {
+		log.Log(attacker,"You killed "+npc.GetName(),attacker.GetName() + " killed " + npc.GetName())
+	}
 }
 
 func (npc *Npc) GetId() string {
