@@ -10,18 +10,25 @@ import (
 	"strings"
 )
 
-const (
-	LOG_TYPE_MESSAGE = iota
-	LOG_TYPE_EMOTE = iota
-	LOG_TYPE_COMBAT = iota
-)
+// Log Object
 
-// Message Object
-
+type LogObjectType int8
 type LogObjects []*LogObject
 type LogObject struct {
-	Type int				`json:"type"`
+	Type LogObjectType		`json:"type"`
 	Data string				`json:"data"`
+}
+
+//Log Types
+
+const (
+	LOG_TYPE_MESSAGE = LogObjectType(iota)
+	LOG_TYPE_EMOTE = LogObjectType(iota)
+	LOG_TYPE_COMBAT = LogObjectType(iota)
+)
+var logTypesStrings []string = []string{"msg","emote","combat"}
+func (t LogObjectType) MarshalJSON() ([]byte, error) {
+	return []byte("\""+logTypesStrings[t]+"\""), nil
 }
 
 //Player
