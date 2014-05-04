@@ -44,10 +44,13 @@ var request = function(method,command,value,callback){
 	domLocationExits,
 	domLocationActions,
 	domLocationItems,
+	domLocationNpcs,
+	domLocationCombat,
 	listExits = {},
 	listActions = {},
 	listItems = {},
-	listNpcs = {};
+	listNpcs = {},
+	listAttacks = {};
 
 Array.prototype.hasOwnItemInPath = function(match,path){
 	var len = this.length;
@@ -168,11 +171,26 @@ var parseLocationData = function(data){
 				request("get","pickup/"+entry.id,parseLocationData);
 			});
 		});
-		updateDomList(document.getElementById("locationNpcs"),listNpcs,data.npcs,function(entry){
+		updateDomList(domLocationNpcs,listNpcs,data.npcs,function(entry){
 			entry.dom.addEventListener("click",function(){
 				request("post","attack/"+entry.id,parseLocationData);
 			});
 		});
+
+		if(data.combat && data.npcs.length > 0) {
+			updateDomList(domLocationCombat,listAttacks,data.npcs.filter(function(npc){
+				return !npc.friendly;
+			}),function(entry){
+				entry.dom.addEventListener("click",function(){
+					request("get","attack/"+entry.id,parseLocationData);
+				});
+			});
+			domLocationCombat.style.display = "block";
+			domLocationNpcs.style.display = "none";
+		} else {
+			domLocationCombat.style.display = "none";
+			domLocationNpcs.style.display = "block";
+		}
 	} else {
 		//Show room selection
 		toggleTabs("tabRooms");
@@ -274,6 +292,8 @@ window.addEventListener("load",function(){
 	domLocationExits = document.getElementById("locationExits");
 	domLocationActions = document.getElementById("locationActions");
 	domLocationItems = document.getElementById("locationItems");
+	domLocationNpcs = document.getElementById("locationNpcs");
+	domLocationCombat = document.getElementById("combatAttacks");
 
 	//List
 	document.getElementById("listRooms").addEventListener("change",function(e){
@@ -322,6 +342,9 @@ window.addEventListener("load",function(){
 			window.localStorage.setItem("olduar_username",Username);
 			window.localStorage.setItem("olduar_password",Password);
 		});
+	});
+	document.getElementById("combatDefend").addEventListener("click",function(){
+		request("get","defend",parseLocationData);
 	});
 	document.getElementById("buttonRename").addEventListener("click",function(){
 		request("post","rename",document.getElementById("txtName").value,function(success){
