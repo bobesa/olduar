@@ -216,70 +216,75 @@ func (room *Room) Prepare() {
 				}
 			}
 
-			//Process commands
-			switch(cmd.Command) {
-			case "attack", "defend":
-				if(room.combat.InProgress && room.combat.GetCurrentFighter() == cmd.Player) {
-					enemy := room.GetEnemy(cmd.Parameter,cmd.Player.GetTeam())
-					if(enemy != nil && cmd.Command == "attack") {
-						room.combat.Attack(enemy)
-					} else if(cmd.Command == "defend") {
-						room.combat.Defend()
+			if(!room.combat.PlayerCanDoAction(cmd.Player)) {
+				resp = room.GetPlayerResponse(cmd.Player)
+
+			} else {
+				//Process commands
+				switch(cmd.Command) {
+				case "attack", "defend":
+					if(room.combat.InProgress && room.combat.GetCurrentFighter() == cmd.Player) {
+						enemy := room.GetEnemy(cmd.Parameter,cmd.Player.GetTeam())
+						if(enemy != nil && cmd.Command == "attack") {
+							room.combat.Attack(enemy)
+						} else if(cmd.Command == "defend") {
+							room.combat.Defend()
+						}
 					}
-				}
-				resp = room.GetPlayerResponse(cmd.Player)
+					resp = room.GetPlayerResponse(cmd.Player)
 
-			case "ability": //TODO: Implement abilities
-				resp = []byte("null")
+				case "ability": //TODO: Implement abilities
+					resp = []byte("null")
 
-			case "save":
-				room.Save()
-				resp = []byte("null")
-			case "look":
-				resp = room.GetPlayerResponse(cmd.Player)
-			case "do":
-				if(cmd.Parameter != "") {
-					room.CurrentLocation.DoAction(room,cmd.Player,cmd.Parameter)
-				}
-				resp = room.GetPlayerResponse(cmd.Player)
-			case "go":
-				if(cmd.Parameter != "") {
-					room.GoTo(cmd.Parameter,cmd.Player)
-				}
-				resp = room.GetPlayerResponse(cmd.Player)
-			case "inventory":
-				inventory := make([]ResponseItem,len(cmd.Player.Inventory))
-				for index, item := range cmd.Player.Inventory {
-					inventory[index] = item.GenerateResponse()
-				}
-				resp, _ = json.Marshal(inventory)
-			case "inspect":
-				item := cmd.Player.Inventory.Get(cmd.Parameter)
-				if(item != nil) {
-					resp, _ = json.Marshal(item.Attributes.Response)
-				} else {
-					item := room.CurrentLocation.Items.Get(cmd.Parameter)
+				case "save":
+					room.Save()
+					resp = []byte("null")
+				case "look":
+					resp = room.GetPlayerResponse(cmd.Player)
+				case "do":
+					if(cmd.Parameter != "") {
+						room.CurrentLocation.DoAction(room,cmd.Player,cmd.Parameter)
+					}
+					resp = room.GetPlayerResponse(cmd.Player)
+				case "go":
+					if(cmd.Parameter != "" && !room.combat.Available()) {
+						room.GoTo(cmd.Parameter,cmd.Player)
+					}
+					resp = room.GetPlayerResponse(cmd.Player)
+				case "inventory":
+					inventory := make([]ResponseItem,len(cmd.Player.Inventory))
+					for index, item := range cmd.Player.Inventory {
+						inventory[index] = item.GenerateResponse()
+					}
+					resp, _ = json.Marshal(inventory)
+				case "inspect":
+					item := cmd.Player.Inventory.Get(cmd.Parameter)
 					if(item != nil) {
 						resp, _ = json.Marshal(item.Attributes.Response)
+					} else {
+						item := room.CurrentLocation.Items.Get(cmd.Parameter)
+						if(item != nil) {
+							resp, _ = json.Marshal(item.Attributes.Response)
+						}
 					}
-				}
-			case "pickup":
-				if(cmd.Parameter != "" && cmd.Player.Pickup(cmd.Parameter)) {
-					resp = room.GetPlayerResponse(cmd.Player)
-				}
-			case "drop":
-				if(cmd.Player.Drop(cmd.Parameter)) {
-					resp = room.GetPlayerResponse(cmd.Player)
-				}
-			case "use":
-				if(cmd.Player.Use(cmd.Parameter)) {
-					resp = room.GetPlayerResponse(cmd.Player)
-				}
-			case "stats":
-				resp, _ = json.Marshal(cmd.Player.Stats)
-			case "equip":
-				if(cmd.Player.Equip(cmd.Parameter)) {
+				case "pickup":
+					if(cmd.Parameter != "" && cmd.Player.Pickup(cmd.Parameter)) {
+						resp = room.GetPlayerResponse(cmd.Player)
+					}
+				case "drop":
+					if(cmd.Player.Drop(cmd.Parameter)) {
+						resp = room.GetPlayerResponse(cmd.Player)
+					}
+				case "use":
+					if(cmd.Player.Use(cmd.Parameter)) {
+						resp = room.GetPlayerResponse(cmd.Player)
+					}
+				case "stats":
 					resp, _ = json.Marshal(cmd.Player.Stats)
+				case "equip":
+					if(cmd.Player.Equip(cmd.Parameter)) {
+						resp, _ = json.Marshal(cmd.Player.Stats)
+					}
 				}
 			}
 			if(resp == nil) {
