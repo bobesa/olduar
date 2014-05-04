@@ -1,7 +1,6 @@
 package olduar
 
 import (
-	"fmt"
 	"math/rand"
 	"strconv"
 )
@@ -87,14 +86,10 @@ func (q *CombatQueue) Available() bool {
 func (q *CombatQueue) Start() {
 	q.InProgress = true
 	q.recomputeQueue()
-	fmt.Println("Combat started!")
-	fmt.Println("-----------------------------")
 }
 
 func (q *CombatQueue) End() {
 	q.InProgress = false
-	fmt.Println("-----------------------------")
-	fmt.Println("Combat ended!")
 }
 
 func (q *CombatQueue) recomputeQueue() {
@@ -165,8 +160,6 @@ func (q *CombatQueue) GetCurrentFighter() Fighter {
 
 func (q *CombatQueue) NextTurn() {
 	if(q.InProgress) {
-		fmt.Println(q.GetCurrentFighter().GetName() + "> Next turn")
-
 		//Advance
 		q.queuePosition++
 		if (q.queuePosition >= len(q.queue)) {
@@ -210,7 +203,7 @@ func (q *CombatQueue) Attack(enemy Fighter) bool {
 	} else {
 		q.Log(enemy,attacker.GetName() + " attacked you for " + dmgStr + " damage",attacker.GetName() + " attacked "+enemy.GetName()+" for " + dmgStr + " damage")
 	}
-	
+
 	attacker.Heal(heal,q)
 	enemy.Damage(damage,q,attacker)
 
