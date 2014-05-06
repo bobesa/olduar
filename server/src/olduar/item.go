@@ -11,31 +11,31 @@ import (
 // Loader for item templates
 
 func LoadItems() bool {
-
-	files, err := ioutil.ReadDir(MainServerConfig.DirItems);
-	if(err != nil) {
+	//Traverse paths
+	files := GetFilesFromDirectory(MainServerConfig.DirItems);
+	if(len(files) == 0) {
 		fmt.Println("Unable to load items from \""+MainServerConfig.DirItems+"\"")
 		return false
 	}
 
 	//Load locations
 	fmt.Println("Loading item files:")
-	for _, file := range files {
-		data, err := ioutil.ReadFile(MainServerConfig.DirItems+"/"+file.Name());
+	for _, filename := range files {
+		data, err := ioutil.ReadFile(filename);
 		if(err == nil) {
 			items := make(ItemTemplates,0)
 			err := json.Unmarshal(data,&items)
 			if(err == nil) {
-				fmt.Println("\t" + file.Name() + ": loaded "+strconv.Itoa(len(items))+" items")
+				fmt.Println("\t" + filename + ": loaded "+strconv.Itoa(len(items))+" items")
 				for _, item := range items {
 					item.Prepare()
 					ItemTemplateDirectory[item.Id] = item
 				}
 			} else {
-				fmt.Println("\t" + file.Name() + ": Failed to load")
+				fmt.Println("\t" + filename + ": Failed to load")
 			}
 		} else {
-			fmt.Println("\t" + file.Name() + ": Failed to load")
+			fmt.Println("\t" + filename + ": Failed to load")
 		}
 	}
 

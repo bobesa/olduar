@@ -12,20 +12,20 @@ var CharacterTemplateDirectory map[string]Npc
 func LoadCharacters() bool {
 	CharacterTemplateDirectory = make(map[string]Npc)
 
-	files, err := ioutil.ReadDir(MainServerConfig.DirCharacters);
-	if(err != nil) {
+	files := GetFilesFromDirectory(MainServerConfig.DirCharacters);
+	if(len(files) == 0) {
 		fmt.Println("Unable to load locations from \""+MainServerConfig.DirCharacters+"\"")
 		return false
 	}
 	//Load locations
 	fmt.Println("Loading character files:")
-	for _, file := range files {
-		data, err := ioutil.ReadFile(MainServerConfig.DirCharacters + "/" + file.Name());
+	for _, filename := range files {
+		data, err := ioutil.ReadFile(filename);
 		if (err == nil) {
 			npcs := make([]Npc,0)
 			err := json.Unmarshal(data,&npcs)
 			if(err == nil) {
-				fmt.Println("\t"+file.Name()+": loaded "+strconv.Itoa(len(npcs))+" characters")
+				fmt.Println("\t" + filename + ": loaded "+strconv.Itoa(len(npcs))+" characters")
 				for _, npc := range npcs {
 					npc.Health = npc.MaxHealth
 					CharacterTemplateDirectory[npc.Id] = npc

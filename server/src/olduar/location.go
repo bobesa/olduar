@@ -92,8 +92,8 @@ func (loc *Location) Visit() bool {
 
 func LoadLocations() bool {
 
-	files, err := ioutil.ReadDir(MainServerConfig.DirLocations);
-	if(err != nil) {
+	files := GetFilesFromDirectory(MainServerConfig.DirLocations);
+	if(len(files) == 0) {
 		fmt.Println("Unable to load locations from \""+MainServerConfig.DirLocations+"\"")
 		return false
 	}
@@ -106,13 +106,13 @@ func LoadLocations() bool {
 
 	//Load locations
 	fmt.Println("Loading location files:")
-	for _, file := range files {
-		data, err := ioutil.ReadFile(MainServerConfig.DirLocations+"/"+file.Name());
+	for _, filename := range files {
+		data, err := ioutil.ReadFile(filename);
 		if(err == nil) {
 			region := LoadingRegion{}
 			err := json.Unmarshal(data,&region)
 			if(err == nil && region.Region != "") {
-				fmt.Println("\t" + file.Name() + ": (Region: "+region.Region+") " + region.Description);
+				fmt.Println("\t" + filename + ": (Region: "+region.Region+") " + region.Description);
 				_, found := LocationTemplateDirectoryRegions[region.Region];
 				if(!found) {
 					LocationTemplateDirectoryRegions[region.Region] = make(LocationTemplates,0)
@@ -133,10 +133,10 @@ func LoadLocations() bool {
 					LocationTemplateDirectoryRegions[region.Region] = append(LocationTemplateDirectoryRegions[region.Region],location)
 				}
 			} else {
-				fmt.Println("\t" + file.Name() + ": Failed to load")
+				fmt.Println("\t" + filename + ": Failed to load")
 			}
 		} else {
-			fmt.Println("\t" + file.Name() + ": Failed to load")
+			fmt.Println("\t" + filename + ": Failed to load")
 		}
 	}
 
