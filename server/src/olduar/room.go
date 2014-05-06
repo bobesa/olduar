@@ -158,6 +158,13 @@ func (room *Room) cycleLocations(location *Location) {
 		}
 	}
 
+	//Npcs
+	if(len(location.Npcs)>0) {
+		for _, npc := range location.Npcs {
+			npc.Guid = GenerateGUID()
+		}
+	}
+
 	//Check location
 	if(location.Current) {
 		room.CurrentLocation = location

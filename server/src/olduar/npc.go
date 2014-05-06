@@ -53,6 +53,7 @@ type Npc struct {
 func (npc Npc) MakeInstance() *Npc {
 	fmt.Println("Making instance of \""+npc.Name+"\"")
 	npcCopy := npc
+	npcCopy.Guid = GenerateGUID()
 	return &npcCopy
 }
 

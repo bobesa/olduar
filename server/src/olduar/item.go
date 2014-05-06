@@ -115,6 +115,7 @@ func (template *ItemTemplate) GenerateItem() *Item {
 
 	return &Item{
 		Id: template.Id,
+		Guid: GenerateGUID(),
 		Equipped: false,
 		Attributes: template,
 		Actions: actions,
@@ -177,6 +178,7 @@ func (item *Item) Load() bool {
 		attr, found := ItemTemplateDirectory[item.Id]
 		if(found) {
 			item.Attributes = attr
+			item.Guid = GenerateGUID()
 		}
 		return found
 	}

@@ -124,6 +124,7 @@ func (player *Player) Save() {
 
 func (p *Player) Activate() {
 	p.AuthToken = "Basic "+base64.StdEncoding.EncodeToString([]byte(p.Username+":"+p.Password))
+	p.Guid = GenerateGUID()
 	ActivePlayers[p.AuthToken] = p
 	ActivePlayersCount = len(ActivePlayers)
 	ActivePlayersByUsername[strings.ToLower(p.Username)] = p
