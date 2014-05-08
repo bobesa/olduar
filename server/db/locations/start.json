@@ -7,7 +7,7 @@
             "name":"Pub",
 
             "desc":"You are standing in front of a pub waiting for adventure.",
-            "desc_short":"a pub",
+            "descShort":"a pub",
 
             "exits":[
                 {"id":"woods","region":"woods"},

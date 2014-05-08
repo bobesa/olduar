@@ -7,15 +7,15 @@
             "name":"Tree",
 
             "desc":"You are standing in front of a massive tree cutting trough sky.",
-            "desc_short":"a big tree",
+            "descShort":"a big tree",
 
             "actions":[
                 {
                     "id":"hug",
                     "action":"message",
                     "config":{
-                        "msg_party":"%player% hugged a tree",
-                        "msg_player":"You hugged a tree"
+                        "msgParty":"%player% hugged a tree",
+                        "msgPlayer":"You hugged a tree"
                     },
                     "desc":"hug a tree"
                 }
@@ -27,7 +27,7 @@
             "name":"Shrine",
 
             "desc":"You found a magical shrine. In the center you see a fountain full of sparkling water.",
-            "desc_short":"a shrine",
+            "descShort":"a shrine",
 
             "actions":[
                 {
@@ -36,8 +36,8 @@
                     "config": {
                         "type": "heal",
                         "value": 50,
-                        "msg_party": "%player% drank the water from fountain",
-                        "msg_player": "You drank the water from fountain"
+                        "msgParty": "%player% drank the water from fountain",
+                        "msgPlayer": "You drank the water from fountain"
                     },
                     "desc":"drink the water"
                 }

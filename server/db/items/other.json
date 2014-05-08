@@ -32,7 +32,7 @@
             "config":{
                 "type":"heal",
                 "value": 25,
-                "msg_player": "You were healed for %value%"
+                "msgPlayer": "You were healed for %value%"
             }
         }]
     },

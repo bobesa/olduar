@@ -7,7 +7,7 @@
             "name":"Tree",
     
             "desc":"You are standing in front of a pub waiting for adventure.",
-            "desc_short":"a tree",
+            "descShort":"a tree",
 
 			"npcs": [
 				{"id":"boar"}
@@ -18,7 +18,7 @@
             "name":"Lake",
 
             "desc":"You are looking at the beautiful lake full of fish.",
-            "desc_short":"a lake",
+            "descShort":"a lake",
 
             "items":[
                 {"id":"fishing_pole"}
@@ -28,9 +28,9 @@
                 {
                     "id":"fishing",
                     "charges":20,
-                    "charges_msg":"Lake is empty",
+                    "chargesMsg":"Lake is empty",
                     "requirements":[
-                        {"type":"item","value":"fishing_pole","error_msg":"You cannot fish without fishing pole"}
+                        {"type":"item","value":"fishing_pole","errorMsg":"You cannot fish without fishing pole"}
                     ],
                     "action":"give",
                     "config":{
@@ -39,26 +39,26 @@
                             {
                                 "id":"",
                                 "chance":0.85,
-                                "msg_party":"%player% tried fishing but came empty handed!",
-                                "msg_player":"You failed to catch anything!"
+                                "msgParty":"%player% tried fishing but came empty handed!",
+                                "msgPlayer":"You failed to catch anything!"
                             },
                             {
                                 "id":"useless_shoe",
                                 "chance":0.1,
-                                "msg_party":"%player% caught a useless shoe!",
-                                "msg_player":"You caught a useless shoe!"
+                                "msgParty":"%player% caught a useless shoe!",
+                                "msgPlayer":"You caught a useless shoe!"
                             },
                             {
                                 "id":"fish",
                                 "chance":0.5,
-                                "msg_party":"%player% caught a fish!",
-                                "msg_player":"You caught a fish!"
+                                "msgParty":"%player% caught a fish!",
+                                "msgPlayer":"You caught a fish!"
                             },
                             {
                                 "id":"goldfish",
                                 "chance":0.001,
-                                "msg_party":"%player% caught a goldfish!",
-                                "msg_player":"You caught a goldfish!"
+                                "msgParty":"%player% caught a goldfish!",
+                                "msgPlayer":"You caught a goldfish!"
                             }
                         ]
                     },
