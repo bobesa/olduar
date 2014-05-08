@@ -7,6 +7,8 @@ import (
 
 type Fighter interface {
 	GetStats() AttributeList
+	Defending(bool)
+	IsDefending() bool
 	Damage(float64, *CombatQueue, Fighter)
 	Heal(float64, *CombatQueue)
 	Die(*CombatQueue, Fighter)
@@ -86,10 +88,18 @@ func (q *CombatQueue) Available() bool {
 func (q *CombatQueue) Start() {
 	q.InProgress = true
 	q.recomputeQueue()
+	q.resetDefending()
 }
 
 func (q *CombatQueue) End() {
 	q.InProgress = false
+	q.resetDefending()
+}
+
+func (q *CombatQueue) resetDefending() {
+	for fighter := range q.combatants {
+		fighter.Defending(false)
+	}
 }
 
 func (q *CombatQueue) recomputeQueue() {
@@ -168,6 +178,8 @@ func (q *CombatQueue) NextTurn() {
 
 		if(!q.Available()) {
 			q.End()
+		} else {
+			q.GetCurrentFighter().Defending(false)
 		}
 
 	}
@@ -176,6 +188,7 @@ func (q *CombatQueue) NextTurn() {
 func (q *CombatQueue) Defend() {
 	if(q.InProgress) {
 		defender := q.GetCurrentFighter()
+		defender.Defending(true)
 		q.Log(defender,"You are defending",defender.GetName() + " is defending")
 		q.NextTurn()
 	}
@@ -196,6 +209,12 @@ func (q *CombatQueue) Attack(enemy Fighter) bool {
 
 	//Do actual attack
 	damage, heal := attacker.GetStats().Attack(enemy.GetStats(),q.room)
+
+	//Defensive reduction
+	if(enemy.IsDefending()) {
+		damage /= 2
+		heal /= 2
+	}
 
 	dmgStr := strconv.FormatFloat(damage,'f',0,64)
 	if(attacker.IsPlayer()) {

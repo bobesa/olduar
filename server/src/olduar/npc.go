@@ -47,6 +47,8 @@ type Npc struct {
 	MaxHealth float64 		`json:"healthMax"`
 	Money int64	 			`json:"money"`
 	Friendly bool 			`json:"friendly"`
+
+	defending bool
 	//TODO: Implement loot drop
 }
 
@@ -107,6 +109,14 @@ func (npc *Npc) IsPlayer() bool {
 
 func (npc *Npc) IsAlive() bool {
 	return npc.Health > 0.0
+}
+
+func (npc *Npc) Defending(value bool) {
+	npc.defending = value
+}
+
+func (npc *Npc) IsDefending() bool {
+	return npc.defending
 }
 
 func (npc *Npc) GetName() string {

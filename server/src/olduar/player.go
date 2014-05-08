@@ -46,6 +46,7 @@ type Player struct {
 	Name string 			`json:"name"`
 	Guid GUID				`json:"-"`
 	log LogObjects
+	defending bool
 
 	//Stats
 	Health float64 			`json:"health"`
@@ -308,6 +309,14 @@ func (p *Player) IsPlayer() bool {
 
 func (p *Player) IsAlive() bool {
 	return p.Health > 0.0
+}
+
+func (p *Player) Defending(value bool) {
+	p.defending = value
+}
+
+func (p *Player) IsDefending() bool {
+	return p.defending
 }
 
 func (p *Player) GetName() string {
