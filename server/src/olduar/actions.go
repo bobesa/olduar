@@ -58,7 +58,7 @@ type ActionRequirements []*ActionRequirement
 type ActionRequirement struct {
 	Type string 				`json:"type"`
 	Value string 				`json:"value"`
-	ErrorMessage string 		`json:"error_msg"`
+	ErrorMessage string 		`json:"errorMsg"`
 }
 
 //Actioner interface
@@ -79,9 +79,9 @@ func AppendVariablesToString(str string, player *Player, config map[string]inter
 //Message action type
 
 type ActionTypeMessage struct {
-	MessageAll string		`json:"msg_all"`
-	MessageParty string		`json:"msg_party"`
-	MessagePlayer string	`json:"msg_player"`
+	MessageAll string		`json:"msgAll"`
+	MessageParty string		`json:"msgParty"`
+	MessagePlayer string	`json:"msgPlayer"`
 }
 
 func (a *ActionTypeMessage) Prepare() bool {
@@ -123,9 +123,9 @@ func (a *ActionTypeLocation) Do(player *Player, room *Room, action *Action) {
 type ActionTypeEffect struct {
 	Type string 			`json:"type"`
 	Value float64 			`json:"value"`
-	MessageAll string		`json:"msg_all"`
-	MessageParty string		`json:"msg_party"`
-	MessagePlayer string	`json:"msg_player"`
+	MessageAll string		`json:"msgAll"`
+	MessageParty string		`json:"msgParty"`
+	MessagePlayer string	`json:"msgPlayer"`
 }
 
 func (a *ActionTypeEffect) Prepare() bool {

@@ -20,12 +20,12 @@ type ServerConfig struct {
 	Port string				`json:"port"`
 	Name string				`json:"name"`
 
-	DirSave string			`json:"directory_save"`
+	DirSave string			`json:"directorySave"`
 
-	DirItems string			`json:"directory_items"`
-	DirLocations string		`json:"directory_locations"`
-	DirCharacters string	`json:"directory_characters"`
-	DirOther string			`json:"directory_other"`
+	DirItems string			`json:"directoryItems"`
+	DirLocations string		`json:"directoryLocations"`
+	DirCharacters string	`json:"directoryCharacters"`
+	DirOther string			`json:"directoryOther"`
 }
 
 var MainServerMux *http.ServeMux

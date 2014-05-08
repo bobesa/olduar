@@ -127,8 +127,8 @@ type ItemLoot struct {
 	Id string 					`json:"id"`
 	Template *ItemTemplate 		`json:"-"`
 	Chance float64 				`json:"chance"`
-	MessageParty string			`json:"msg_party"`
-	MessagePlayer string		`json:"msg_player"`
+	MessageParty string			`json:"msgParty"`
+	MessagePlayer string		`json:"msgPlayer"`
 }
 
 // Item Template definition

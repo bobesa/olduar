@@ -49,7 +49,7 @@ type Player struct {
 
 	//Stats
 	Health float64 			`json:"health"`
-	MaxHealth float64 		`json:"health_max"`
+	MaxHealth float64 		`json:"healthMax"`
 	Money int64	 			`json:"money"`
 	Inventory Inventory		`json:"inventory"`
 	Stats AttributeList		`json:"-"`

@@ -44,7 +44,7 @@ type Npc struct {
 	Description string 		`json:"desc"`
 	Stats AttributeList		`json:"stats"`
 	Health float64 			`json:"health"`
-	MaxHealth float64 		`json:"health_max"`
+	MaxHealth float64 		`json:"healthMax"`
 	Money int64	 			`json:"money"`
 	Friendly bool 			`json:"friendly"`
 	//TODO: Implement loot drop

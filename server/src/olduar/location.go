@@ -19,7 +19,7 @@ type Location struct {
 	Name string 					`json:"name"`
 	Region string					`json:"region,omitempty"`
 	Description string 				`json:"desc"`
-	DescriptionShort string 		`json:"desc_short"`
+	DescriptionShort string 		`json:"descShort"`
 	Exits LocationExits 			`json:"exits"`
 	Actions map[string]*Action		`json:"actions,omitempty"`
 	Npcs []*Npc						`json:"npcs,omitempty"`
@@ -244,7 +244,7 @@ type LocationTemplate struct {
 	Name string 					`json:"name"`
 	Region string					`json:"region,omitempty"`
 	Description string 				`json:"desc"`
-	DescriptionShort string 		`json:"desc_short"`
+	DescriptionShort string 		`json:"descShort"`
 	Actions Actions					`json:"actions,omitempty"`
 	Exits LocationExits				`json:"exits,omitempty"`
 	Items LocationEntryTemplates 	`json:"items"`

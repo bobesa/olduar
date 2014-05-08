@@ -76,7 +76,7 @@ type Response struct {
 }
 
 type ResponseCombat struct {
-	YourTurn bool 		`json:"your_turn"`
+	YourTurn bool 		`json:"yourTurn"`
 	OnTurnId string 	`json:"id"`
 	OnTurnGuid GUID 	`json:"guid"`
 }
@@ -86,7 +86,7 @@ type ResponseNpc struct {
 	Name *string `json:"name"`
 	Description *string `json:"desc"`
 	Health float64 `json:"health"`
-	HealthMax float64 `json:"health_max"`
+	HealthMax float64 `json:"healthMax"`
 	Friendly bool `json:"friendly"`
 }
 
