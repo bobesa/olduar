@@ -5,7 +5,7 @@ Action properties
 
 `charges` (__int__, __optional__) amount of times action can be used
 
-`charges_msg` (__string__, __optional__) message sent to player if this action is out of charges
+`chargesMsg` (__string__, __optional__) message sent to player if this action is out of charges
 
 `requirements` (__array of requirements__, __optional__) requirements that must be met to do the action
 
@@ -15,11 +15,11 @@ Action properties
 
 ### All action types
 
-`msg_party` (__string__) message sent to everyone except player doing the action
+`msgParty` (__string__) message sent to everyone except player doing the action
 
-`msg_player` (__string__) message sent to player doing the action
+`msgPlayer` (__string__) message sent to player doing the action
 
-`msg_all` (__string__) message sent to everyone
+`msgAll` (__string__) message sent to everyone
 
 *All messages can contain special keywords (such as `%player%`) & properties from config (such as `%value%`) that will translate to actual values*
 
@@ -31,8 +31,8 @@ Action properties
     "id":"hug",
     "action":"message",
     "config":{
-        "msg_party":"%player% hugged a tree",
-        "msg_player":"You hugged a tree"
+        "msgParty":"%player% hugged a tree",
+        "msgPlayer":"You hugged a tree"
     },
     "desc":"hug a tree"
 }
@@ -52,8 +52,8 @@ Action properties
     "config": {
         "type": "heal",
         "value": 50,
-        "msg_party": "%player% drank the water from fountain and got healed for %value% damage",
-        "msg_player": "You drank the water from fountain"
+        "msgParty": "%player% drank the water from fountain and got healed for %value% damage",
+        "msgPlayer": "You drank the water from fountain"
     },
     "desc":"drink the water"
 }
@@ -73,8 +73,6 @@ Action properties
     "desc": "A simple fishing pole",
     "type": "2hand",
     "class": "staff",
-    "damage_min": 1,
-    "damage_max": 5,
     "actions":[{
         "action":"location",
         "config":{
@@ -93,8 +91,8 @@ Action properties
 
 * `id` (__string__) what item will be given (invalid id or empty string means nothing will be given)
 * `chance` (__float__) what is relative chance for item to be selected
-* `msg_party` (__string__, __optional__) what will be sent to other players if item is given to player
-* `msg_player` (__string__, __optional__) what will be sent to player if item is given to player
+* `msgParty` (__string__, __optional__) what will be sent to other players if item is given to player
+* `msgPlayer` (__string__, __optional__) what will be sent to player if item is given to player
 
 *In following `give` configuration we declare that player can get 1 item (`"amount":1`) from selection of items (`"items":[...`)*
 
@@ -105,26 +103,26 @@ Action properties
         {
             "id":"",
             "chance":0.85,
-            "msg_party":"%player% tried fishing but came empty handed!",
-            "msg_player":"You failed to catch anything!"
+            "msgParty":"%player% tried fishing but came empty handed!",
+            "msgPlayer":"You failed to catch anything!"
         },
         {
             "id":"useless_shoe",
             "chance":0.1,
-            "msg_party":"%player% caught a useless shoe!",
-            "msg_player":"You caught a useless shoe!"
+            "msgParty":"%player% caught a useless shoe!",
+            "msgPlayer":"You caught a useless shoe!"
         },
         {
             "id":"fish",
             "chance":0.5,
-            "msg_party":"%player% caught a fish!",
-            "msg_player":"You caught a fish!"
+            "msgParty":"%player% caught a fish!",
+            "msgPlayer":"You caught a fish!"
         },
         {
             "id":"goldfish",
             "chance":0.001,
-            "msg_party":"%player% caught a goldfish!",
-            "msg_player":"You caught a goldfish!"
+            "msgParty":"%player% caught a goldfish!",
+            "msgPlayer":"You caught a goldfish!"
         }
     ]
 }
@@ -138,7 +136,7 @@ Action Requirements properties
 
 `value` (__string__) value for for requirement (this must always be string, even if is suppose to be number)
 
-`error_msg` (__string__, __optional__) message sent to player if he does not match the requirement
+`errorMsg` (__string__, __optional__) message sent to player if he does not match the requirement
 
 *In following example we declare that __fishing_pole__ (in inventory) is required for this action to be used, if not we send player message `"You cannot fish without fishing pole"`*
 ```json
@@ -146,7 +144,7 @@ Action Requirements properties
     {
         "type": "item",
         "value": "fishing_pole",
-        "error_msg": "You cannot fish without fishing pole"
+        "errorMsg": "You cannot fish without fishing pole"
     }
 ],
 ```
@@ -161,12 +159,12 @@ __*Please note that when requirements are checked, they are checked in order dec
     {
         "type": "item",
         "value": "fishing_pole",
-        "error_msg":"You cannot fish without fishing pole"
+        "errorMsg":"You cannot fish without fishing pole"
     },
     {
         "type": "item",
         "value": "bait",
-        "error_msg":"You cannot fish without bait"
+        "errorMsg":"You cannot fish without bait"
     }
 ]
 ```
@@ -207,7 +205,7 @@ Location properties
 
 `desc` (__string__) description of item  (example: `"You see a very tall tree"`)
 
-`desc_short` (__string__) description of location written next to travel directions (example: `"a tree"`)
+`descShort` (__string__) description of location written next to travel directions (example: `"a tree"`)
 
 `actions` (__array of actions__, __optional__) actions triggered by `"do"` command
 
@@ -222,7 +220,7 @@ Location properties
     "name":"Crossroads",
 
     "desc":"You are standing in the middle of the crossroads.",
-    "desc_short":"a crossroads",
+    "descShort":"a crossroads",
 
     "items":[
         {"id":"empty_mug","chance":0.1}
