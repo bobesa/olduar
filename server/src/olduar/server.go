@@ -193,7 +193,7 @@ func Run(configFilename string) {
 							if(err != nil || message == "") {
 								w.Write([]byte("false"))
 							} else {
-								target.Room.Tell(player.Name +" ("+player.Username+"): "+message,target)
+								target.Tell(player.Name +" ("+player.Username+"): "+message)
 								w.Write([]byte("true"))
 							}
 						} else {
