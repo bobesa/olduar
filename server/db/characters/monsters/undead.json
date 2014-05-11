@@ -1,0 +1,35 @@
+[
+	{
+		"id":"zombie",
+		"name":"Zombie",
+		"healthMax":100,
+		"groups":["monsters","undead"],
+		"stats":{
+			"cold_damage":{"min":0,"max":5},
+			"damage":{"min":5,"max":15},
+			"defense":{"min":0,"max":5}
+		}
+	},
+	{
+		"id":"ghoul",
+		"name":"Ghoul",
+		"healthMax":200,
+		"groups":["monsters","undead"],
+		"stats":{
+			"cold_damage":{"min":0,"max":5},
+			"damage":{"min":7,"max":15},
+			"defense":{"min":15,"max":20}
+		}
+	},
+	{
+		"id":"lich",
+		"name":"Lich",
+		"healthMax":300,
+		"groups":["monsters","undead"],
+		"stats":{
+			"cold_damage":{"min":10,"max":25},
+			"damage":{"min":5,"max":15},
+			"defense":{"min":15,"max":25}
+		}
+	}
+]
