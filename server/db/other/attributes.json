@@ -19,6 +19,16 @@
 			"msg":"%target% got burnt for %damage% damage"
 		}
 	},
+	{
+		"id":"poison_damage",
+		"name":"Poison Damage",
+		"desc":"Damage caused by poison",
+		"type":"damage",
+		"groups":[3],
+		"config":{
+			"msg":"%target% got poisoned for %damage% damage"
+		}
+	},
 
 	{
 		"id":"defense",
