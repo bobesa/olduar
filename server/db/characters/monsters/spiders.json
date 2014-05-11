@@ -1,0 +1,24 @@
+[
+	{
+		"id":"giant_spider",
+		"name":"Giant Spider",
+		"healthMax":100,
+		"groups":["monsters","spiders"],
+		"stats":{
+			"poison_damage":{"min":5,"max":15},
+			"damage":{"min":5,"max":15},
+			"defense":{"min":10,"max":15}
+		}
+	},
+	{
+		"id":"elite_spider",
+		"name":"Elite Spider",
+		"healthMax":300,
+		"groups":["monsters","spiders"],
+		"stats":{
+			"poison_damage":{"min":10,"max":25},
+			"damage":{"min":10,"max":25},
+			"defense":{"min":15,"max":20}
+		}
+	}
+]
