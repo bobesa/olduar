@@ -1,14 +1,45 @@
 [
 	{
+		"id":"rat",
+		"name":"Rat",
+		"healthMax":20,
+		"groups":["animals"],
+		"stats":{
+			"damage":{"min":1,"max":4},
+			"defense":{"min":0,"max":2}
+		}
+	},
+	{
 		"id":"boar",
 		"name":"Boar",
 		"healthMax":50,
+		"groups":["animals"],
 		"stats":{
 			"damage":{"min":10,"max":15},
-			"defense":{"min":10,"max":10}
+			"defense":{"min":5,"max":10}
 		},
 		"drops":[
 			{"id":"meat","chance":0.5}
 		]
+	},
+	{
+		"id":"badger",
+		"name":"Badger",
+		"healthMax":100,
+		"groups":["animals"],
+		"stats":{
+			"damage":{"min":15,"max":20},
+			"defense":{"min":7,"max":15}
+		}
+	},
+	{
+		"id":"bear",
+		"name":"Bear",
+		"healthMax":150,
+		"groups":["animals"],
+		"stats":{
+			"damage":{"min":20,"max":25},
+			"defense":{"min":10,"max":15}
+		}
 	}
 ]
