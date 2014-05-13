@@ -1,0 +1,35 @@
+[
+	{
+		"id": "wooden_axe",
+		"name": "Wooden axe",
+		"desc": "A simple axe made out of wood",
+		"type": "1hand",
+		"class": "axe",
+		"groups": ["axes"],
+		"stats": {
+			"damage":{"min":2,"max":8}
+		}
+	},
+	{
+		"id": "bronze_axe",
+		"name": "Bronze axe",
+		"desc": "Axe made out of bronze",
+		"type": "1hand",
+		"class": "axe",
+		"groups": ["axes"],
+		"stats": {
+			"damage":{"min":4,"max":14}
+		}
+	},
+	{
+		"id": "steel_axe",
+		"name": "Steel axe",
+		"desc": "Axe made out of steel",
+		"type": "1hand",
+		"class": "axe",
+		"groups": ["axes"],
+		"stats": {
+			"damage":{"min":6,"max":20}
+		}
+	}
+]

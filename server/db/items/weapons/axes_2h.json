@@ -1,0 +1,13 @@
+[
+	{
+		"id": "massive_axe",
+		"name": "Massive axe",
+		"desc": "Massive axe made out of steel",
+		"type": "2hand",
+		"class": "axe",
+		"groups": ["axes"],
+		"stats": {
+			"damage":{"min":20,"max":50}
+		}
+	}
+]
