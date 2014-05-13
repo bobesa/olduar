@@ -9,5 +9,17 @@
 		"stats": {
 			"damage":{"min":25,"max":35}
 		}
+	},
+	{
+		"id": "bastard_sword_of_fire",
+		"name": "Bastard sword of Fire",
+		"desc": "Massive sword made out of steel with magical properties",
+		"type": "2hand",
+		"class": "sword",
+		"groups": ["swords"],
+		"stats": {
+			"damage":{"min":20,"max":30},
+			"fire_damage":{"min":15,"max":20}
+		}
 	}
 ]

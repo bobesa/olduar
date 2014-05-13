@@ -31,5 +31,17 @@
 		"stats": {
 			"damage":{"min":6,"max":20}
 		}
+	},
+	{
+		"id": "fiery_axe",
+		"name": "Fiery axe",
+		"desc": "Axe made out of steel with magical properties",
+		"type": "1hand",
+		"class": "axe",
+		"groups": ["axes"],
+		"stats": {
+			"damage":{"min":4,"max":16},
+			"fire_damage":{"min":2,"max":10}
+		}
 	}
 ]
