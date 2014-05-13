@@ -20,48 +20,5 @@
         "id": "useless_shoe",
         "name": "Useless shoe",
         "desc": "Shoe full of holes that is completely useless"
-    },
-    {
-        "id": "fish",
-        "name": "Fish",
-        "desc": "A small fish",
-        "type": "consumable",
-		"class": "food",
-        "actions":[{
-            "action":"effect",
-            "config":{
-                "type":"heal",
-                "value": 25,
-                "msgPlayer": "You were healed for %value%"
-            }
-        }]
-    },
-    {
-        "id": "goldfish",
-        "name": "Goldfish",
-        "desc": "A small non-magical goldfish",
-        "type": "consumable",
-		"class": "food",
-        "actions":[{
-            "action":"effect",
-            "config":{
-                "type":"heal",
-                "value": 50
-            }
-        }]
-    },
-	{
-		"id": "meat",
-		"name": "Raw meat",
-		"desc": "Flank of raw meat",
-		"type": "consumable",
-		"class": "food",
-		"actions":[{
-			"action":"effect",
-			"config":{
-				"type":"heal",
-				"value": 40
-			}
-		}]
-	}
+    }
 ]
