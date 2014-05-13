@@ -1,0 +1,32 @@
+[
+	{
+		"id": "small_healing_potion",
+		"name": "Small Healing potion",
+		"desc": "Potion that will recover 50 health points",
+		"type": "consumable",
+		"class": "potion",
+		"actions":[{
+			"action":"effect",
+			"config":{
+				"type":"heal",
+				"value": 50,
+				"msgPlayer": "You were healed for %value%"
+			}
+		}]
+	},
+	{
+		"id": "healing_potion",
+		"name": "Healing potion",
+		"desc": "Potion that will recover 100 health points",
+		"type": "consumable",
+		"class": "potion",
+		"actions":[{
+			"action":"effect",
+			"config":{
+				"type":"heal",
+				"value": 100,
+				"msgPlayer": "You were healed for %value%"
+			}
+		}]
+	}
+]
