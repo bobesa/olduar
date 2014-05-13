@@ -16,9 +16,24 @@
             }
         }]
     },
-    {
-        "id": "useless_shoe",
-        "name": "Useless shoe",
-        "desc": "Shoe full of holes that is completely useless"
-    }
+	{
+		"id": "useless_shoe",
+		"name": "Useless shoe",
+		"desc": "Shoe full of holes that is completely useless"
+	},
+	{
+		"id": "cigarette",
+		"name": "Cigarette",
+		"desc": "Amazing cigarette full of tobacco",
+		"type": "consumable",
+		"class": "other",
+		"actions":[{
+			"action":"effect",
+			"config":{
+				"type":"damage",
+				"value": 1,
+				"msgPlayer": "Your lungs hurt a bit"
+			}
+		}]
+	}
 ]
