@@ -30,6 +30,21 @@
 		}]
 	},
 	{
+		"id": "big_healing_potion",
+		"name": "Big Healing potion",
+		"desc": "Potion that will recover 150 health points",
+		"type": "consumable",
+		"class": "potion",
+		"actions":[{
+			"action":"effect",
+			"config":{
+				"type":"heal",
+				"value": 150,
+				"msgPlayer": "You were healed for %value%"
+			}
+		}]
+	},
+	{
 		"id": "fish",
 		"name": "Fish",
 		"desc": "A small fish",
