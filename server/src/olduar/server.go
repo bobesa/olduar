@@ -67,9 +67,6 @@ func Run(configFilename string) {
 		//Load all players
 		LoadAllPlayers()
 
-		//Tests
-		RunTests()
-
 		//Prepared message .)
 		fmt.Println("Everything is prepared, \""+MainServerConfig.Name+"\" is running")
 		fmt.Println()
