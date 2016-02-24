@@ -1,32 +1,32 @@
 package olduar
 
 import (
-	"fmt"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
-	"strconv"
 	"math/rand"
+	"strconv"
 )
 
 // Loader for item templates
 
 func LoadItems() bool {
 	//Traverse paths
-	files := GetFilesFromDirectory(MainServerConfig.DirItems);
-	if(len(files) == 0) {
-		fmt.Println("Unable to load items from \""+MainServerConfig.DirItems+"\"")
+	files := GetFilesFromDirectory(MainServerConfig.DirItems)
+	if len(files) == 0 {
+		fmt.Println("Unable to load items from \"" + MainServerConfig.DirItems + "\"")
 		return false
 	}
 
 	//Load locations
 	fmt.Println("Loading item files:")
 	for _, filename := range files {
-		data, err := ioutil.ReadFile(filename);
-		if(err == nil) {
-			items := make(ItemTemplates,0)
-			err := json.Unmarshal(data,&items)
-			if(err == nil) {
-				fmt.Println("\t" + filename + ": loaded "+strconv.Itoa(len(items))+" items")
+		data, err := ioutil.ReadFile(filename)
+		if err == nil {
+			items := make(ItemTemplates, 0)
+			err := json.Unmarshal(data, &items)
+			if err == nil {
+				fmt.Println("\t" + filename + ": loaded " + strconv.Itoa(len(items)) + " items")
 				for _, item := range items {
 					item.Prepare()
 					ItemTemplateDirectory[item.Id] = item
@@ -46,16 +46,16 @@ func LoadItems() bool {
 
 func GetItemsFromLootTable(amount int, table ItemLootTable) ItemLootTable {
 	//Loot table has no items or amount = 0? return none
-	if(len(table) == 0 || amount == 0) {
+	if len(table) == 0 || amount == 0 {
 		return nil
 	}
 
 	//Prepare loot bag
-	loot := make(ItemLootTable,amount)
+	loot := make(ItemLootTable, amount)
 
 	//Loot table has only 1 item? Return that item @amount times
-	if(len(table) == 1) {
-		for i:=0; i<amount; i++ {
+	if len(table) == 1 {
+		for i := 0; i < amount; i++ {
 			loot[i] = table[0]
 		}
 		return loot
@@ -64,19 +64,19 @@ func GetItemsFromLootTable(amount int, table ItemLootTable) ItemLootTable {
 	//Prepare selection of loot pointers
 	minChance := 1.0
 	for _, item := range table {
-		if(item.Chance < minChance && item.Chance != 0.0) {
+		if item.Chance < minChance && item.Chance != 0.0 {
 			minChance = item.Chance
 		}
 	}
 	selectionAmount, s := 0, 0
 	for _, item := range table {
-		if(item.Chance != 0.0) {
-			selectionAmount += (int)(item.Chance/minChance)
+		if item.Chance != 0.0 {
+			selectionAmount += (int)(item.Chance / minChance)
 		}
 	}
-	selection, shuffledSelection := make(ItemLootTable,selectionAmount), make(ItemLootTable,selectionAmount)
+	selection, shuffledSelection := make(ItemLootTable, selectionAmount), make(ItemLootTable, selectionAmount)
 	for _, item := range table {
-		if(item.Chance != 0.0) {
+		if item.Chance != 0.0 {
 			cnt := (int)(item.Chance / minChance)
 			for i := 0; i < cnt; i++ {
 				selection[s] = item
@@ -92,7 +92,7 @@ func GetItemsFromLootTable(amount int, table ItemLootTable) ItemLootTable {
 	}
 
 	//Pick items
-	for i:=0;i<amount;i++ {
+	for i := 0; i < amount; i++ {
 		loot[i] = shuffledSelection[rand.Intn(selectionAmount)]
 	}
 
@@ -101,34 +101,34 @@ func GetItemsFromLootTable(amount int, table ItemLootTable) ItemLootTable {
 }
 
 func (template *ItemTemplate) GenerateItem() *Item {
-	if(template == nil) {
+	if template == nil {
 		return nil
 	}
 
 	//Set action charges to unlimited for 0 value
 	actions := template.Actions
 	for index, action := range actions {
-		if(action.Charges == 0) {
+		if action.Charges == 0 {
 			actions[index].Charges = -1 //-1 = unlimited
 		}
 	}
 
 	return &Item{
-		Id: template.Id,
-		Guid: GenerateGUID(),
-		Equipped: false,
+		Id:         template.Id,
+		Guid:       GenerateGUID(),
+		Equipped:   false,
 		Attributes: template,
-		Actions: actions,
+		Actions:    actions,
 	}
 }
 
 type ItemLootTable []*ItemLoot
 type ItemLoot struct {
-	Id string 					`json:"id"`
-	Template *ItemTemplate 		`json:"-"`
-	Chance float64 				`json:"chance"`
-	MessageParty string			`json:"msgParty"`
-	MessagePlayer string		`json:"msgPlayer"`
+	Id            string        `json:"id"`
+	Template      *ItemTemplate `json:"-"`
+	Chance        float64       `json:"chance"`
+	MessageParty  string        `json:"msgParty"`
+	MessagePlayer string        `json:"msgPlayer"`
 }
 
 // Item Template definition
@@ -138,15 +138,15 @@ var ItemTemplateDirectory map[string]*ItemTemplate = make(map[string]*ItemTempla
 type ItemTemplates []*ItemTemplate
 
 type ItemTemplate struct {
-	Id string 				`json:"id"`
-	Quality int8 			`json:"quality"`
-	Name string 			`json:"name"`
-	Description string		`json:"desc"`
-	Class string			`json:"class"`
-	Type string				`json:"type"`
-	Weight float64			`json:"weight"`
-	Actions Actions			`json:"actions,omitempty"`
-	Stats AttributeList		`json:"stats"`
+	Id          string        `json:"id"`
+	Quality     int8          `json:"quality"`
+	Name        string        `json:"name"`
+	Description string        `json:"desc"`
+	Class       string        `json:"class"`
+	Type        string        `json:"type"`
+	Weight      float64       `json:"weight"`
+	Actions     Actions       `json:"actions,omitempty"`
+	Stats       AttributeList `json:"stats"`
 
 	//Prepared response object
 	Response ResponseItemDetail `json:"-"`
@@ -166,17 +166,17 @@ func (i *ItemTemplate) Prepare() {
 }
 
 type Item struct {
-	Id string						`json:"id"`
-	Guid GUID						`json:"guid"`
-	Attributes *ItemTemplate		`json:"-"`
-	Actions Actions					`json:"actions,omitempty"`
-	Equipped bool					`json:"equipped"`
+	Id         string        `json:"id"`
+	Guid       GUID          `json:"guid"`
+	Attributes *ItemTemplate `json:"-"`
+	Actions    Actions       `json:"actions,omitempty"`
+	Equipped   bool          `json:"equipped"`
 }
 
 func (item *Item) Load() bool {
-	if(item.Attributes == nil) {
+	if item.Attributes == nil {
 		attr, found := ItemTemplateDirectory[item.Id]
-		if(found) {
+		if found {
 			item.Attributes = attr
 			item.Guid = GenerateGUID()
 		}
@@ -187,17 +187,17 @@ func (item *Item) Load() bool {
 
 func (item *Item) GenerateResponse() ResponseItem {
 	return ResponseItem{
-		Quality: item.Attributes.Quality,
-		Id: &item.Id,
-		Name: &item.Attributes.Name,
+		Quality:     item.Attributes.Quality,
+		Id:          &item.Id,
+		Name:        &item.Attributes.Name,
 		Description: &item.Attributes.Description,
-		Equipped: item.Equipped,
-		Usable: len(item.Actions) > 0,
+		Equipped:    item.Equipped,
+		Usable:      len(item.Actions) > 0,
 	}
 }
 
 func (item *Item) Use(player *Player) {
 	for index, _ := range item.Attributes.Actions {
-		player.Room.DoAction(player,&item.Actions[index])
+		player.Room.DoAction(player, &item.Actions[index])
 	}
 }

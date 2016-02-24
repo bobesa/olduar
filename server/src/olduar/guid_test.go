@@ -10,7 +10,7 @@ func TestGuids(t *testing.T) {
 			t.Error("Duplicate GUID found")
 			return
 		} else {
-			tests[guid] = guid;
+			tests[guid] = guid
 		}
 	}
 }
